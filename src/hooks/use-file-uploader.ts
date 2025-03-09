@@ -1,7 +1,7 @@
-import { type ChangeEvent } from "react";
-
 import { useClipboardPaste } from "./use-clipboard-paste";
 import { useProcessFile } from "./use-process-file";
+
+import { type ChangeEvent } from "react";
 import { type FileTypeString } from "@/lib/file-utils";
 
 export type FileUploaderResult = {
@@ -61,6 +61,7 @@ export const useFileUploader = ({ accept, onError }: FileUploaderOptions = {}): 
 
   useClipboardPaste({
     acceptedFileTypes,
+    onError,
     onPaste: handleFilePaste,
   }); 
 
