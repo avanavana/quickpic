@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePlausible } from "next-plausible";
 
+import { ErrorMessage } from "@/components/shared/error-message";
 import { FetchFromUrlForm } from "@/components/shared/fetch-from-url-form";
 import { FileDropzone } from "@/components/shared/file-dropzone";
 import { OptionSelector } from "@/components/shared/option-selector";
@@ -19,11 +20,15 @@ import { type ImageMetadata } from "@/lib/file-utils";
 type SquareToolCoreProps = {
   fileUploaderProps: FileUploaderResult;
   fileFetcherProps: FileFetcherResult;
+  error: string | null;
+  onError: (error: string | null) => void;
 };
 
 function SquareToolCore({
   fileUploaderProps,
   fileFetcherProps,
+  error,
+  onError,
 }: SquareToolCoreProps) {
   const plausible = usePlausible();
 
@@ -76,6 +81,7 @@ function SquareToolCore({
     if (metadata) {
       setImageMetadata(metadata);
       setImageContent(content);
+      onError(null);
     } else {
       setImageMetadata(null);
       setImageContent('');
@@ -85,6 +91,7 @@ function SquareToolCore({
     fileUploaderProps.imageContent,
     fileFetcherProps.imageMetadata,
     fileFetcherProps.imageContent,
+    onError,
   ]);
 
   useEffect(() => {
@@ -130,6 +137,8 @@ function SquareToolCore({
           pending={fileFetcherProps.pending}
           handleSubmit={fileFetcherProps.handleFetchFile}
         />
+
+        {error && <ErrorMessage error={error} />}
       </div>
     );
   }
@@ -194,18 +203,22 @@ function SquareToolCore({
 }
 
 export function SquareTool() {
-  const fileUploaderProps = useFileUploader();
-  const fileFetcherProps = useFileFetcher();
+  const [error, setError] = useState<string | null>(null);
+  const fileUploaderProps = useFileUploader({ onError: setError });
+  const fileFetcherProps = useFileFetcher({ onError: setError });
 
   return (
     <FileDropzone
       acceptedFileTypes={["image/*", ".jpg", ".jpeg", ".png", ".webp", ".svg"]}
       dropText="Drop image file"
       setCurrentFile={fileUploaderProps.handleFileUpload}
+      onError={setError}
     >
       <SquareToolCore  
         fileUploaderProps={fileUploaderProps}
         fileFetcherProps={fileFetcherProps}
+        error={error}
+        onError={setError}
       />
     </FileDropzone>
   );

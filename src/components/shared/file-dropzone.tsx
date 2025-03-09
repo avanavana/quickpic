@@ -1,10 +1,13 @@
 import React, { useCallback, useState, useRef } from "react";
 
+import { type FileTypeString, generateFileTypesString } from "@/lib/file-utils";
+
 interface FileDropzoneProps {
   children: React.ReactNode;
   acceptedFileTypes: string[];
   dropText: string;
   setCurrentFile: (file: File) => void;
+  onError?: (error: string | null) => void;
 }
 
 export function FileDropzone({
@@ -12,6 +15,7 @@ export function FileDropzone({
   acceptedFileTypes,
   dropText,
   setCurrentFile,
+  onError,
 }: FileDropzoneProps) {
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef(0);
@@ -53,25 +57,28 @@ export function FileDropzone({
         const droppedFile = files[0];
 
         if (!droppedFile) {
-          alert("How did you do a drop with no files???");
-          throw new Error("No files dropped");
+          if (onError) onError("How did you do a drop with no files???");
+          else alert("How did you do a drop with no files???");
+          return;
         }
 
         if (
           !acceptedFileTypes.includes(droppedFile.type) &&
           !acceptedFileTypes.some((type) =>
-            droppedFile.name.toLowerCase().endsWith(type.replace("*", "")),
+            droppedFile.name.toLowerCase().endsWith(type.replace("*", ""))
           )
         ) {
-          alert("Invalid file type. Please upload a supported file type.");
-          throw new Error("Invalid file");
+          const acceptedFileTypesString = generateFileTypesString(acceptedFileTypes as FileTypeString[]);
+          if (onError) onError(`Uploaded file has invalid type. Valid types are: ${acceptedFileTypesString}.`); 
+          else alert(`Uploaded file has invalid type. Valid types are: ${acceptedFileTypesString}.`);
+          return;
         }
 
         // Happy path
         setCurrentFile(droppedFile);
       }
     },
-    [acceptedFileTypes, setCurrentFile],
+    [acceptedFileTypes, setCurrentFile, onError],
   );
 
   return (

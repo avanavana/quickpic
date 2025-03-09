@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePlausible } from "next-plausible";
 
+import { ErrorMessage } from "@/components/shared/error-message";
 import { FetchFromUrlForm } from "@/components/shared/fetch-from-url-form";
 import { FileDropzone } from "@/components/shared/file-dropzone";
 import { UploadBox } from "@/components/shared/upload-box";
@@ -144,11 +145,15 @@ function SaveAsPngButton({
 type SVGToolCoreProps = {
   fileUploaderProps: FileUploaderResult;
   fileFetcherProps: FileFetcherResult;
+  error: string | null;
+  onError: (error: string | null) => void;
 };
 
 function SVGToolCore({
   fileUploaderProps,
   fileFetcherProps,
+  error,
+  onError,
 }: SVGToolCoreProps) {
   const [scale, setScale] = useLocalStorage<Scale>("svgTool_scale", 1);
   const [customScale, setCustomScale] = useLocalStorage<number>(
@@ -192,6 +197,7 @@ function SVGToolCore({
       setImageMetadata(metadata);
       setImageContent(content);
       setRawContent(raw);
+      onError(null);
     } else {
       setImageMetadata(null);
       setImageContent('');
@@ -204,6 +210,7 @@ function SVGToolCore({
     fileFetcherProps.imageMetadata,
     fileFetcherProps.imageContent,
     fileFetcherProps.rawContent,
+    onError,
   ]);
 
   if (!imageMetadata || !imageContent)
@@ -222,6 +229,8 @@ function SVGToolCore({
           pending={fileFetcherProps.pending}
           handleSubmit={fileFetcherProps.handleFetchFile}
         />
+
+        {error && <ErrorMessage error={error} />}
       </div>
     );
 
@@ -282,18 +291,22 @@ function SVGToolCore({
 }
 
 export function SVGTool() {
-  const fileUploaderProps = useFileUploader({ accept: [".svg", "image/svg+xml"] });
-  const fileFetcherProps = useFileFetcher();
+  const [error, setError] = useState<string | null>(null);
+  const fileUploaderProps = useFileUploader({ accept: [".svg", "image/svg+xml"], onError: setError });
+  const fileFetcherProps = useFileFetcher({ onError: setError });
 
   return (
     <FileDropzone
       setCurrentFile={fileUploaderProps.handleFileUpload}
       acceptedFileTypes={["image/svg+xml", ".svg"]}
       dropText="Drop SVG file"
+      onError={setError}
     >
       <SVGToolCore
         fileUploaderProps={fileUploaderProps}
         fileFetcherProps={fileFetcherProps}
+        error={error}
+        onError={setError}
       />
     </FileDropzone>
   );

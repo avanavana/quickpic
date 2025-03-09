@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { usePlausible } from "next-plausible";
 
 import { BorderRadiusSelector } from "@/components/border-radius-selector";
+import { ErrorMessage } from "@/components/shared/error-message";
 import { FetchFromUrlForm } from "@/components/shared/fetch-from-url-form";
 import { FileDropzone } from "@/components/shared/file-dropzone";
 import { OptionSelector } from "@/components/shared/option-selector";
@@ -160,11 +161,15 @@ function SaveAsPngButton({
 type RoundedToolCoreProps = {
   fileUploaderProps: FileUploaderResult;
   fileFetcherProps: FileFetcherResult;
+  error: string | null;
+  onError: (error: string | null) => void;
 };
 
 function RoundedToolCore({
   fileUploaderProps,
   fileFetcherProps,
+  error,
+  onError,
  }: RoundedToolCoreProps) {
   const [radius, setRadius] = useLocalStorage<Radius>("roundedTool_radius", 2);
   const [isCustomRadius, setIsCustomRadius] = useState(false);
@@ -208,6 +213,7 @@ function RoundedToolCore({
     if (metadata) {
       setImageMetadata(metadata);
       setImageContent(content);
+      onError(null);
     } else {
       setImageMetadata(null);
       setImageContent('');
@@ -217,6 +223,7 @@ function RoundedToolCore({
     fileUploaderProps.imageContent,
     fileFetcherProps.imageMetadata,
     fileFetcherProps.imageContent,
+    onError,
   ]);
 
   if (!imageMetadata) {
@@ -236,6 +243,8 @@ function RoundedToolCore({
           pending={fileFetcherProps.pending}
           handleSubmit={fileFetcherProps.handleFetchFile}
         />
+
+        {error && <ErrorMessage error={error} />}
       </div>
     );
   }
@@ -298,18 +307,22 @@ function RoundedToolCore({
 }
 
 export function RoundedTool() {
-  const fileUploaderProps = useFileUploader();
-  const fileFetcherProps = useFileFetcher();
+  const [error, setError] = useState<string | null>(null);
+  const fileUploaderProps = useFileUploader({ onError: setError });
+  const fileFetcherProps = useFileFetcher({ onError: setError });
 
   return (
     <FileDropzone
       acceptedFileTypes={["image/*", ".jpg", ".jpeg", ".png", ".webp", ".svg"]}
       dropText="Drop image file"
       setCurrentFile={fileUploaderProps.handleFileUpload}
+      onError={setError}
     >
       <RoundedToolCore
         fileUploaderProps={fileUploaderProps}
         fileFetcherProps={fileFetcherProps}
+        error={error}
+        onError={setError}
       />
     </FileDropzone>
   );
