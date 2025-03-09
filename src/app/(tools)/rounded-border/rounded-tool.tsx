@@ -8,6 +8,7 @@ import { ErrorMessage } from "@/components/shared/error-message";
 import { FetchFromUrlForm } from "@/components/shared/fetch-from-url-form";
 import { FileDropzone } from "@/components/shared/file-dropzone";
 import { OptionSelector } from "@/components/shared/option-selector";
+import { PreviewScale } from "@/components/shared/preview-scale";
 import { UploadBox } from "@/components/shared/upload-box";
 
 import { useFileFetcher } from "@/hooks/use-file-fetcher";
@@ -84,37 +85,60 @@ function useImageConverter(props: {
 
 interface ImageRendererProps {
   imageContent: string;
-  radius: Radius;
+  imageMetadata: { width: number; height: number; name: string };
+  radius: Radius | null;
   background: BackgroundOption;
+  setPreviewScale: (scale: number | null) => void;
+  imageContainer: React.RefObject<HTMLDivElement> | null;
 }
 
 const ImageRenderer = ({
   imageContent,
+  imageMetadata,
   radius,
   background,
+  setPreviewScale,
+  imageContainer,
 }: ImageRendererProps) => {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [effectiveBorderRadius, setEffectiveBorderRadius] = useState<number | null>(radius);
+  const [internalScale, setInternalScale] = useState<number>(1);
 
   useEffect(() => {
-    if (containerRef.current) {
-      const imgElement = containerRef.current.querySelector("img");
-      if (imgElement) {
-        imgElement.style.borderRadius = `${radius}px`;
-      }
+    if (!imageContainer?.current || !imageContent) return;
+    const container = imageContainer.current;
+
+    const updatePreviewScaleFactor = () => {
+      const imageContainerWidth = container.clientWidth;
+      
+      const previewScaleFactor = Math.min(
+        imageContainerWidth / imageMetadata.width,
+        imageContainerWidth / imageMetadata.height,
+        1 // Prevent upscaling
+      )
+
+      setEffectiveBorderRadius((radius ?? 1) * previewScaleFactor);
+      setPreviewScale(previewScaleFactor < 1 ? previewScaleFactor : null);
+      setInternalScale(previewScaleFactor);
     }
-  }, [imageContent, radius]);
+
+    updatePreviewScaleFactor();
+    const resizeObserver = new ResizeObserver(updatePreviewScaleFactor);
+    resizeObserver.observe(container);
+    
+    return () => resizeObserver.disconnect();
+  }, [imageContent, imageMetadata, radius, imageContainer, setPreviewScale]);
 
   return (
-    <div ref={containerRef} className="relative w-[500px]">
-      <div
-        className="absolute inset-0"
-        style={{ backgroundColor: background, borderRadius: 0 }}
-      />
+    <div style={{ backgroundColor: background }}>
       <img
         src={imageContent}
+        width={imageMetadata.width * internalScale}
+        height={imageMetadata.height * internalScale}
         alt="Preview"
-        className="relative rounded-lg"
-        style={{ width: "100%", height: "auto", objectFit: "contain" }}
+        style={{
+          borderRadius: `${effectiveBorderRadius}px`,
+          objectFit: "contain",
+        }}
       />
     </div>
   );
@@ -188,14 +212,17 @@ function RoundedToolCore({
     "transparent",
   );
 
+  const imageContainerRef = useRef<HTMLDivElement>(null);
   const [imageMetadata, setImageMetadata] = useState<ImageMetadata>(fileUploaderProps.imageMetadata);
   const [imageContent, setImageContent] = useState<string>(fileUploaderProps.imageContent);
+  const [previewScale, setPreviewScale] = useState<number | null>(null);
   
   const cancel = () => {
     fileUploaderProps.cancel();
     fileFetcherProps.cancel();
     setImageMetadata(null);
     setImageContent('');
+    setPreviewScale(null);
   }
 
   const handleRadiusChange = (value: number | "custom") => {
@@ -263,11 +290,15 @@ function RoundedToolCore({
   return (
     <div className="mx-auto flex max-w-sm flex-col items-center justify-center gap-6 p-8">
       {/* Preview Section */}
-      <div className="flex w-full flex-col items-center gap-4 rounded-xl">
+      <div ref={imageContainerRef} className="flex w-full flex-col items-center gap-4 rounded-xl">
+        <PreviewScale previewScale={previewScale} />
         <ImageRenderer
           imageContent={imageContent}
+          imageMetadata={imageMetadata}
           radius={radius}
           background={background}
+          setPreviewScale={setPreviewScale}
+          imageContainer={imageContainerRef as React.RefObject<HTMLDivElement>}
         />
         <p className="text-lg font-medium text-white/80 break-all">
           {imageMetadata.name}

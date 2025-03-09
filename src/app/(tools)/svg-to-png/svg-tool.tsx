@@ -6,12 +6,14 @@ import { usePlausible } from "next-plausible";
 import { ErrorMessage } from "@/components/shared/error-message";
 import { FetchFromUrlForm } from "@/components/shared/fetch-from-url-form";
 import { FileDropzone } from "@/components/shared/file-dropzone";
+import { PreviewScale } from "@/components/shared/preview-scale";
 import { UploadBox } from "@/components/shared/upload-box";
 import { SVGScaleSelector } from "@/components/svg-scale-selector";
 
 import { useFileFetcher } from "@/hooks/use-file-fetcher";
 import { useFileUploader } from "@/hooks/use-file-uploader";
 import { useLocalStorage } from "@/hooks/use-local-storage";
+import { formatNumber } from "@/lib/math-utils";
 
 import { type FileFetcherResult } from "@/hooks/use-file-fetcher";
 import { type FileUploaderResult } from "@/hooks/use-file-uploader";
@@ -23,8 +25,8 @@ function scaleSvg(svgContent: string, scale: number) {
   const parser = new DOMParser();
   const svgDoc = parser.parseFromString(svgContent, "image/svg+xml");
   const svgElement = svgDoc.documentElement;
-  const width = parseInt(svgElement.getAttribute("width") ?? "300");
-  const height = parseInt(svgElement.getAttribute("height") ?? "150");
+  const width = parseInt(svgElement.getAttribute("width") ?? "576");
+  const height = parseInt(svgElement.getAttribute("height") ?? "576");
 
   const scaledWidth = width * scale;
   const scaledHeight = height * scale;
@@ -87,24 +89,53 @@ function useSvgConverter(props: {
 }
 
 interface SVGRendererProps {
-  svgContent: string;
+  imageContent: string;
+  imageMetadata: { width: number; height: number; name: string };
+  setPreviewScale: (scale: number | null) => void;
+  imageContainer: React.RefObject<HTMLDivElement> | null;
 }
 
-function SVGRenderer({ svgContent }: SVGRendererProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
+function SVGRenderer({
+  imageContent,
+  imageMetadata,
+  setPreviewScale,
+  imageContainer,
+ }: SVGRendererProps) {
+  const [internalScale, setInternalScale] = useState<number>(1);
 
   useEffect(() => {
-    if (containerRef.current) {
-      containerRef.current.innerHTML = svgContent;
-      const svgElement = containerRef.current.querySelector("svg");
-      if (svgElement) {
-        svgElement.setAttribute("width", "100%");
-        svgElement.setAttribute("height", "100%");
-      }
-    }
-  }, [svgContent]);
+    if (!imageContainer?.current || !imageContent) return;
+    const container = imageContainer.current;
 
-  return <div ref={containerRef} />;
+    const updatePreviewScaleFactor = () => {
+      const imageContainerWidth = container.clientWidth;
+
+      const previewScaleFactor = Math.min(
+        imageContainerWidth / imageMetadata.width,
+        imageContainerWidth / imageMetadata.height,
+        1 // Prevent upscaling
+      );
+
+      setPreviewScale(previewScaleFactor < 1 ? previewScaleFactor : null);
+      setInternalScale(previewScaleFactor);
+    }
+
+    updatePreviewScaleFactor();
+    const resizeObserver = new ResizeObserver(updatePreviewScaleFactor);
+    resizeObserver.observe(container);
+    
+    return () => resizeObserver.disconnect();
+  }, [imageContent, imageMetadata, imageContainer, setPreviewScale]);
+
+  return imageContent ? (
+    <img
+      src={imageContent}
+      alt="Preview"
+      width={imageMetadata.width * internalScale}
+      height={imageMetadata.height * internalScale}
+      style={{ objectFit: "contain" }}
+    />
+  ) : null;
 }
 
 function SaveAsPngButton({
@@ -171,12 +202,14 @@ function SVGToolCore({
     1,
   );
 
+  const imageContainerRef = useRef<HTMLDivElement>(null);
   const [imageMetadata, setImageMetadata] = useState<ImageMetadata>(fileUploaderProps.imageMetadata);
   const [imageContent, setImageContent] = useState<string>(fileUploaderProps.imageContent);
   const [rawContent, setRawContent] = useState<string>(fileUploaderProps.rawContent);
+  const [previewScale, setPreviewScale] = useState<number | null>(null);
 
   // Get the actual numeric scale value
-  const effectiveScale = scale === "custom" ? customScale : scale;
+  const effectiveScale = scale === "custom" ? (customScale ?? 1) : scale;
 
   const cancel = () => {
     fileUploaderProps.cancel();
@@ -184,6 +217,7 @@ function SVGToolCore({
     setImageMetadata(null);
     setImageContent('');
     setRawContent('');
+    setPreviewScale(null);
   }
 
   useEffect(() => {
@@ -249,8 +283,14 @@ function SVGToolCore({
   return (
     <div className="mx-auto flex max-w-2xl flex-col items-center justify-center gap-6 p-6">
       {/* Preview Section */}
-      <div className="w-full flex flex-col items-center gap-4 rounded-xl">
-        <SVGRenderer svgContent={rawContent} />
+      <div ref={imageContainerRef} className="w-full flex flex-col items-center gap-4 rounded-xl">
+        <PreviewScale previewScale={previewScale} />
+        <SVGRenderer
+          imageContent={imageContent}
+          imageMetadata={imageMetadata}
+          setPreviewScale={setPreviewScale}
+          imageContainer={imageContainerRef as React.RefObject<HTMLDivElement>}
+        />
         <p className="text-lg font-medium text-white/80 break-all">
           {imageMetadata.name}
         </p>
@@ -266,11 +306,13 @@ function SVGToolCore({
         </div>
 
         <div className="flex flex-col items-center rounded-lg bg-white/5 p-3">
-          <span className="text-sm text-white/60 text-center">Scaled</span>
+          <span className="text-sm text-white/60 text-center">
+            {`Scaled (${formatNumber(effectiveScale)}×)`}
+          </span>
           <span className="font-medium text-white text-center">
-            {imageMetadata.width * effectiveScale}
+            {Math.floor(imageMetadata.width * effectiveScale)}
             {" × "}
-            {imageMetadata.height * effectiveScale}
+            {Math.floor(imageMetadata.height * effectiveScale)}
           </span>
         </div>
       </div>

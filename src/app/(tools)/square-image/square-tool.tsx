@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePlausible } from "next-plausible";
 
 import { ErrorMessage } from "@/components/shared/error-message";
 import { FetchFromUrlForm } from "@/components/shared/fetch-from-url-form";
 import { FileDropzone } from "@/components/shared/file-dropzone";
 import { OptionSelector } from "@/components/shared/option-selector";
+import { PreviewScale } from "@/components/shared/preview-scale";
 import { UploadBox } from "@/components/shared/upload-box";
 
 import { useFileFetcher } from "@/hooks/use-file-fetcher";
@@ -16,6 +17,56 @@ import { useLocalStorage } from "@/hooks/use-local-storage";
 import { type FileFetcherResult } from "@/hooks/use-file-fetcher";
 import { type FileUploaderResult } from "@/hooks/use-file-uploader";
 import { type ImageMetadata } from "@/lib/file-utils";
+
+interface ImageRendererProps {
+  imageContent: string | null;
+  imageMetadata: { width: number; height: number; name: string };
+  setPreviewScale: (scale: number | null) => void;
+  imageContainer: React.RefObject<HTMLDivElement> | null;
+}
+
+const ImageRenderer = ({
+  imageContent,
+  imageMetadata,
+  setPreviewScale,
+  imageContainer,
+}: ImageRendererProps) => {
+  const [internalScale, setInternalScale] = useState<number>(1);
+
+  useEffect(() => {
+    if (!imageContainer?.current || !imageContent) return;
+    const container = imageContainer.current;
+
+    const updatePreviewScaleFactor = () => {
+      const imageContainerWidth = container.clientWidth;
+
+      const previewScaleFactor = Math.min(
+        imageContainerWidth / imageMetadata.width,
+        imageContainerWidth / imageMetadata.height,
+        1 // Prevent upscaling
+      );
+
+      setPreviewScale(previewScaleFactor < 1 ? previewScaleFactor : null);
+      setInternalScale(previewScaleFactor);
+    }
+
+    updatePreviewScaleFactor();
+    const resizeObserver = new ResizeObserver(updatePreviewScaleFactor);
+    resizeObserver.observe(container);
+    
+    return () => resizeObserver.disconnect();
+  }, [imageContent, imageMetadata, imageContainer, setPreviewScale]);
+
+  return imageContent ? (
+      <img
+        src={imageContent}
+        width={Math.max(imageMetadata.width, imageMetadata.height) * internalScale}
+        height={Math.max(imageMetadata.width, imageMetadata.height) * internalScale}
+        alt="Preview"
+        style={{ objectFit: "contain" }}
+      />
+  ) : null;
+};
 
 function SaveSquareImageButton({
   imageContent,
@@ -85,14 +136,17 @@ function SquareToolCore({
     null,
   );
 
+  const imageContainerRef = useRef<HTMLDivElement>(null);
   const [imageMetadata, setImageMetadata] = useState<ImageMetadata>(fileUploaderProps.imageMetadata);
   const [imageContent, setImageContent] = useState<string>(fileUploaderProps.imageContent);
+  const [previewScale, setPreviewScale] = useState<number | null>(null);
   
   const cancel = () => {
     fileUploaderProps.cancel();
     fileFetcherProps.cancel();
     setImageMetadata(null);
     setImageContent('');
+    setPreviewScale(null);
   }
 
   useEffect(() => {
@@ -177,10 +231,14 @@ function SquareToolCore({
   return (
     <div className="mx-auto flex max-w-2xl flex-col items-center justify-center gap-6 p-6">
       {/* Preview Section */}
-      <div className="flex w-full flex-col items-center gap-4 rounded-xl">
-        {squareImageContent && (
-          <img src={squareImageContent} alt="Preview" className="mb-4" />
-        )}
+      <div ref={imageContainerRef} className="flex w-full flex-col items-center gap-4 rounded-xl">
+        <PreviewScale previewScale={previewScale} />
+        <ImageRenderer
+          imageContent={squareImageContent}
+          imageMetadata={imageMetadata}
+          setPreviewScale={setPreviewScale}
+          imageContainer={imageContainerRef as React.RefObject<HTMLDivElement>}
+        />
         <p className="text-lg font-medium text-white/80 break-all">
           {imageMetadata.name}
         </p>
