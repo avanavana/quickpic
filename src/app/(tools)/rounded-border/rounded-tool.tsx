@@ -89,21 +89,21 @@ function useImageConverter(props: {
 }
 
 interface ImageRendererProps {
+  background: BackgroundOption;
+  imageContainer: React.RefObject<HTMLDivElement> | null;
   imageContent: string;
   imageMetadata: { width: number; height: number; name: string };
   radius: Radius | null;
-  background: BackgroundOption;
   setPreviewScale: (scale: number | null) => void;
-  imageContainer: React.RefObject<HTMLDivElement> | null;
 }
 
 const ImageRenderer = ({
+  background,
+  imageContainer,
   imageContent,
   imageMetadata,
   radius,
-  background,
   setPreviewScale,
-  imageContainer,
 }: ImageRendererProps) => {
   const [effectiveBorderRadius, setEffectiveBorderRadius] = useState<number | null>(radius);
   const [internalScale, setInternalScale] = useState<number>(1);
@@ -134,7 +134,10 @@ const ImageRenderer = ({
   }, [imageContent, imageMetadata, radius, imageContainer, setPreviewScale]);
 
   return (
-    <div style={{ backgroundColor: background }}>
+    <div
+      className={background === "transparent" ? "checkerboard" : ""}
+      style={{ backgroundColor: background }}
+    >
       <img
         src={imageContent}
         width={imageMetadata.width * internalScale}
@@ -349,6 +352,7 @@ function RoundedToolCore({
         formatOption={(option) =>
           option.charAt(0).toUpperCase() + option.slice(1)
         }
+        className="w-full"
       />
 
       <div className="flex gap-2">

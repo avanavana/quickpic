@@ -24,17 +24,19 @@ import { type FileUploaderResult } from "@/hooks/use-file-uploader";
 import { type ImageMetadata } from "@/lib/file-utils";
 
 interface ImageRendererProps {
+  backgroundColor: "black" | "white" | "transparent";
+  imageContainer: React.RefObject<HTMLDivElement> | null;
   imageContent: string | null;
   imageMetadata: { width: number; height: number; name: string };
   setPreviewScale: (scale: number | null) => void;
-  imageContainer: React.RefObject<HTMLDivElement> | null;
 }
 
 const ImageRenderer = ({
+  backgroundColor,
+  imageContainer,
   imageContent,
   imageMetadata,
   setPreviewScale,
-  imageContainer,
 }: ImageRendererProps) => {
   const [internalScale, setInternalScale] = useState<number>(1);
 
@@ -68,6 +70,7 @@ const ImageRenderer = ({
         width={Math.max(imageMetadata.width, imageMetadata.height) * internalScale}
         height={Math.max(imageMetadata.width, imageMetadata.height) * internalScale}
         alt="Preview"
+        className={backgroundColor === "transparent" ? "checkerboard" : ""}
         style={{ objectFit: "contain" }}
       />
   ) : null;
@@ -253,10 +256,11 @@ function SquareToolCore({
       <div ref={imageContainerRef} className="flex w-full flex-col items-center gap-4 rounded-xl">
         <PreviewScale previewScale={previewScale} />
         <ImageRenderer
+          backgroundColor={backgroundColor}
+          imageContainer={imageContainerRef as React.RefObject<HTMLDivElement>}
           imageContent={squareImageContent}
           imageMetadata={imageMetadata}
           setPreviewScale={setPreviewScale}
-          imageContainer={imageContainerRef as React.RefObject<HTMLDivElement>}
         />
         <p className="text-lg font-medium text-white/80 break-all">
           {imageMetadata.name}

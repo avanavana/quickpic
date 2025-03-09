@@ -21,3 +21,9 @@ body {
     transform: rotate(360deg);
   }
 }
+
+@layer base {
+  .checkerboard {
+    background: repeating-conic-gradient(#fff3 0% 25%, #fff1 0% 50%) 0 / 10px 10px;
+  }
+}
