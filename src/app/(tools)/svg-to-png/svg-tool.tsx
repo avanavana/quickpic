@@ -8,6 +8,7 @@ import { ErrorMessage } from "@/components/shared/error-message";
 import { FetchFromUrlForm } from "@/components/shared/fetch-from-url-form";
 import { FileDropzone } from "@/components/shared/file-dropzone";
 import { ClipboardPasteIcon, DownloadIcon } from "@/components/shared/icons";
+import { OptionSelector } from "@/components/shared/option-selector";
 import { PageTitle } from "@/components/shared/page-title";
 import { PreviewScale } from "@/components/shared/preview-scale";
 import { UploadBox } from "@/components/shared/upload-box";
@@ -94,17 +95,19 @@ function useSvgConverter(props: {
 }
 
 interface SVGRendererProps {
+  backgroundColor: "dark" | "light";
+  imageContainer: React.RefObject<HTMLDivElement> | null;
   imageContent: string;
   imageMetadata: { width: number; height: number; name: string };
   setPreviewScale: (scale: number | null) => void;
-  imageContainer: React.RefObject<HTMLDivElement> | null;
 }
 
 function SVGRenderer({
+  backgroundColor,
+  imageContainer,
   imageContent,
   imageMetadata,
   setPreviewScale,
-  imageContainer,
  }: SVGRendererProps) {
   const [internalScale, setInternalScale] = useState<number>(1);
 
@@ -138,7 +141,12 @@ function SVGRenderer({
       alt="Preview"
       width={imageMetadata.width * internalScale}
       height={imageMetadata.height * internalScale}
-      style={{ objectFit: "contain" }}
+      style={{
+        backgroundColor: backgroundColor === "light"
+          ? "var(--foreground)"
+          : "transparent",
+        objectFit: "contain",
+      }}
     />
   ) : null;
 }
@@ -199,6 +207,10 @@ function SVGToolCore({
     "svgTool_customScale",
     1,
   );
+
+  const [previewBackgroundColor, setPreviewBackgroundColor] = useLocalStorage<
+    "dark" | "light"
+  >("svgTool_previewBackgroundColor", "dark");
 
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const [imageMetadata, setImageMetadata] = useState<ImageMetadata>(fileUploaderProps.imageMetadata);
@@ -305,10 +317,11 @@ function SVGToolCore({
       <div ref={imageContainerRef} className="w-full flex flex-col items-center gap-4 rounded-xl">
         <PreviewScale previewScale={previewScale} />
         <SVGRenderer
+          backgroundColor={previewBackgroundColor}
+          imageContainer={imageContainerRef as React.RefObject<HTMLDivElement>}
           imageContent={imageContent}
           imageMetadata={imageMetadata}
           setPreviewScale={setPreviewScale}
-          imageContainer={imageContainerRef as React.RefObject<HTMLDivElement>}
         />
         <p className="text-lg font-medium text-white/80 break-all">
           {imageMetadata.name}
@@ -344,6 +357,18 @@ function SVGToolCore({
         onChange={setScale}
         customValue={customScale}
         onCustomValueChange={setCustomScale}
+      />
+
+      {/* Preview Background Color Controls */}
+      <OptionSelector
+        title="Background (Preview Only)"
+        options={["dark", "light"]}
+        selected={previewBackgroundColor}
+        onChange={setPreviewBackgroundColor}
+        formatOption={(option: "dark" | "light") =>
+          option.charAt(0).toUpperCase() + option.slice(1)
+        }
+        className="w-full"
       />
 
       {/* Action Buttons */}
