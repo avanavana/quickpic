@@ -134,12 +134,22 @@ function SaveAsPngButton({
           plausible("convert-svg-to-png");
           void convertToPng();
         }}
-        className="rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold text-white shadow-md transition-colors duration-200 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75"
+        className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
       >
         Save as PNG
       </button>
     </div>
   );
+}
+
+function ClipboardPasteIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-4 -ml-1 shrink-0">
+      <path d="M15 2H9a1 1 0 0 0-1 1v2c0 .6.4 1 1 1h6c.6 0 1-.4 1-1V3c0-.6-.4-1-1-1Z"/>
+      <path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2M16 4h2a2 2 0 0 1 2 2v2M11 14h10"/>
+      <path d="m17 10 4 4-4 4"/>
+    </svg>
+  )
 }
 
 type SVGToolCoreProps = {
@@ -218,6 +228,8 @@ function SVGToolCore({
       <div className='flex flex-col items-center gap-4'>
         <UploadBox
           title="Make SVGs into PNGs. Also makes them bigger. (100% free btw.)"
+          subtitle="Allows pasting images from clipboard"
+          subtitleIcon={ClipboardPasteIcon}
           description="Upload SVG"
           accept=".svg"
           onChange={fileUploaderProps.handleFileUploadEvent}
@@ -237,9 +249,9 @@ function SVGToolCore({
   return (
     <div className="mx-auto flex max-w-2xl flex-col items-center justify-center gap-6 p-6">
       {/* Preview Section */}
-      <div className="flex w-full flex-col items-center gap-4 rounded-xl p-6">
+      <div className="w-full flex flex-col items-center gap-4 rounded-xl">
         <SVGRenderer svgContent={rawContent} />
-        <p className="text-lg font-medium text-white/80">
+        <p className="text-lg font-medium text-white/80 break-all">
           {imageMetadata.name}
         </p>
       </div>
@@ -247,16 +259,17 @@ function SVGToolCore({
       {/* Size Information */}
       <div className="flex gap-6 text-base">
         <div className="flex flex-col items-center rounded-lg bg-white/5 p-3">
-          <span className="text-sm text-white/60">Original</span>
-          <span className="font-medium text-white">
+          <span className="text-sm text-white/60 text-center">Original</span>
+          <span className="font-medium text-white text-center">
             {imageMetadata.width} × {imageMetadata.height}
           </span>
         </div>
 
         <div className="flex flex-col items-center rounded-lg bg-white/5 p-3">
-          <span className="text-sm text-white/60">Scaled</span>
-          <span className="font-medium text-white">
-            {imageMetadata.width * effectiveScale} ×{" "}
+          <span className="text-sm text-white/60 text-center">Scaled</span>
+          <span className="font-medium text-white text-center">
+            {imageMetadata.width * effectiveScale}
+            {" × "}
             {imageMetadata.height * effectiveScale}
           </span>
         </div>
@@ -276,7 +289,7 @@ function SVGToolCore({
       <div className="flex gap-3">
         <button
           onClick={cancel}
-          className="rounded-lg bg-red-700 px-4 py-2 text-sm font-medium text-white/90 transition-colors hover:bg-red-800"
+          className="rounded-lg bg-transparent px-4 py-2 text-sm font-medium text-white/60 hover:text-white transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/10 focus:bg-white/10"
         >
           Cancel
         </button>

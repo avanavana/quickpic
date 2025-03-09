@@ -17,6 +17,53 @@ import { type FileFetcherResult } from "@/hooks/use-file-fetcher";
 import { type FileUploaderResult } from "@/hooks/use-file-uploader";
 import { type ImageMetadata } from "@/lib/file-utils";
 
+function SaveSquareImageButton({
+  imageContent,
+  imageMetadata,
+}: {
+  imageContent: string | null;
+  imageMetadata: { width: number; height: number; name: string };
+}) {
+  const handleSaveImage = () => {
+    if (imageContent && imageMetadata) {
+      const link = document.createElement("a");
+      link.href = imageContent;
+      const originalFileName = imageMetadata.name;
+      const fileNameWithoutExtension =
+        originalFileName.substring(0, originalFileName.lastIndexOf(".")) ||
+        originalFileName;
+      link.download = `${fileNameWithoutExtension}-squared.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  }
+
+  const plausible = usePlausible();
+
+  return (
+    <button
+      onClick={() => {
+        plausible("create-square-image");
+        handleSaveImage();
+      }}
+      className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
+    >
+      Save Image
+    </button>
+  )
+}
+
+function ClipboardPasteIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-4 -ml-1 shrink-0">
+      <path d="M15 2H9a1 1 0 0 0-1 1v2c0 .6.4 1 1 1h6c.6 0 1-.4 1-1V3c0-.6-.4-1-1-1Z"/>
+      <path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2M16 4h2a2 2 0 0 1 2 2v2M11 14h10"/>
+      <path d="m17 10 4 4-4 4"/>
+    </svg>
+  )
+}
+
 type SquareToolCoreProps = {
   fileUploaderProps: FileUploaderResult;
   fileFetcherProps: FileFetcherResult;
@@ -30,8 +77,6 @@ function SquareToolCore({
   error,
   onError,
 }: SquareToolCoreProps) {
-  const plausible = usePlausible();
-
   const [backgroundColor, setBackgroundColor] = useLocalStorage<
     "black" | "white"
   >("squareTool_backgroundColor", "white");
@@ -42,21 +87,6 @@ function SquareToolCore({
 
   const [imageMetadata, setImageMetadata] = useState<ImageMetadata>(fileUploaderProps.imageMetadata);
   const [imageContent, setImageContent] = useState<string>(fileUploaderProps.imageContent);
-
-  const handleSaveImage = () => {
-    if (squareImageContent && imageMetadata) {
-      const link = document.createElement("a");
-      link.href = squareImageContent;
-      const originalFileName = imageMetadata.name;
-      const fileNameWithoutExtension =
-        originalFileName.substring(0, originalFileName.lastIndexOf(".")) ||
-        originalFileName;
-      link.download = `${fileNameWithoutExtension}-squared.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  };
   
   const cancel = () => {
     fileUploaderProps.cancel();
@@ -126,6 +156,7 @@ function SquareToolCore({
         <UploadBox
           title="Create square images with custom backgrounds. Fast and free."
           subtitle="Allows pasting images from clipboard"
+          subtitleIcon={ClipboardPasteIcon}
           description="Upload Image"
           accept="image/*"
           onChange={fileUploaderProps.handleFileUploadEvent}
@@ -145,32 +176,36 @@ function SquareToolCore({
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col items-center justify-center gap-6 p-6">
-      <div className="flex w-full flex-col items-center gap-4 rounded-xl p-6">
+      {/* Preview Section */}
+      <div className="flex w-full flex-col items-center gap-4 rounded-xl">
         {squareImageContent && (
           <img src={squareImageContent} alt="Preview" className="mb-4" />
         )}
-        <p className="text-lg font-medium text-white/80">
+        <p className="text-lg font-medium text-white/80 break-all">
           {imageMetadata.name}
         </p>
       </div>
 
+      {/* Size Information */}
       <div className="flex gap-6 text-base">
         <div className="flex flex-col items-center rounded-lg bg-white/5 p-3">
-          <span className="text-sm text-white/60">Original</span>
-          <span className="font-medium text-white">
+          <span className="text-sm text-white/60 text-center">Original Size</span>
+          <span className="font-medium text-white text-center">
             {imageMetadata.width} × {imageMetadata.height}
           </span>
         </div>
 
         <div className="flex flex-col items-center rounded-lg bg-white/5 p-3">
-          <span className="text-sm text-white/60">Square Size</span>
-          <span className="font-medium text-white">
-            {Math.max(imageMetadata.width, imageMetadata.height)} ×{" "}
+          <span className="text-sm text-white/60 text-center">Square Size</span>
+          <span className="font-medium text-white text-center">
+            {Math.max(imageMetadata.width, imageMetadata.height)}
+            {" × "}
             {Math.max(imageMetadata.width, imageMetadata.height)}
           </span>
         </div>
       </div>
 
+      {/* Background Controls */}
       <OptionSelector
         title="Background Color"
         options={["white", "black"]}
@@ -184,19 +219,14 @@ function SquareToolCore({
       <div className="flex gap-3">
         <button
           onClick={cancel}
-          className="rounded-lg bg-red-700 px-4 py-2 text-sm font-medium text-white/90 transition-colors hover:bg-red-800"
+          className="rounded-lg bg-transparent px-4 py-2 text-sm font-medium text-white/60 hover:text-white transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/10 focus:bg-white/10"
         >
           Cancel
         </button>
-        <button
-          onClick={() => {
-            plausible("create-square-image");
-            handleSaveImage();
-          }}
-          className="rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold text-white shadow-md transition-colors duration-200 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75"
-        >
-          Save Image
-        </button>
+        <SaveSquareImageButton
+          imageContent={squareImageContent}
+          imageMetadata={imageMetadata}
+        />
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ function BackButton() {
     <div className="fixed left-4 top-4 z-50">
       <Link
         href="/"
-        className="flex items-center gap-2 rounded-md px-3 py-1 text-sm font-medium text-gray-400 transition-colors duration-200 hover:text-gray-200"
+        className="flex items-center gap-2 rounded-md px-3 py-1 text-sm font-medium text-gray-500 transition-colors duration-200 hover:text-gray-200"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -33,9 +33,9 @@ export default function ToolsLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen flex-col justify-between p-8 font-[family-name:var(--font-geist-sans)] sm:p-20">
+    <div className="flex min-h-screen flex-col justify-between px-8 pb-4 font-[family-name:var(--font-geist-sans)]">
       <BackButton />
-      <main className="flex flex-grow flex-col items-center justify-center">
+      <main className="flex flex-col grow items-center justify-center">
         {children}
       </main>
       <footer className="mt-8 text-center text-sm text-gray-500">

@@ -3,6 +3,7 @@ import React from "react";
 interface UploadBoxProps {
   title: string;
   subtitle?: string;
+  subtitleIcon?: React.ElementType;
   description: string;
   accept: string;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -11,6 +12,7 @@ interface UploadBoxProps {
 export function UploadBox({
   title,
   subtitle,
+  subtitleIcon: SubtitleIcon,
   description,
   accept,
   onChange,
@@ -21,6 +23,7 @@ export function UploadBox({
         <p id="upload-box-title" className="text-center text-white">{title}</p>
         {subtitle && (
           <p id="upload-box-subtitle" className="flex gap-1 items-center rounded-full border border-white/30 bg-white/5 px-3 py-0.5 text-center text-sm text-white/60">
+            {SubtitleIcon && <SubtitleIcon />}
             {subtitle}
           </p>
         )}
