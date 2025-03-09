@@ -178,7 +178,7 @@ function SaveAsPngButton({
           plausible("convert-image-to-png");
           void convertToPng();
         }}
-        className="flex items-center gap-2 rounded-lg bg-blue-600 h-10 px-4 py-2 text-sm font-semibold text-white shadow-md transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
+        className="flex items-center gap-2 rounded-lg bg-blue-600 h-10 px-4 py-2 text-sm font-semibold text-white text-left whitespace-nowrap shadow-md transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
       >
         <DownloadIcon strokeWidth={2.5} />
         Save as PNG
@@ -324,7 +324,7 @@ function RoundedToolCore({
 
       {/* Size Information */}
       <div className="flex flex-col items-center rounded-lg bg-white/5 p-3">
-        <span className="text-sm text-white/60 text-center">Actual Size</span>
+        <span className="text-sm text-white/60 text-center whitespace-nowrap">Actual Size</span>
         <span className="font-medium text-white text-center">
           {imageMetadata.width} × {imageMetadata.height}
         </span>
