@@ -102,7 +102,7 @@ function SaveSquareImageButton({
         plausible("create-square-image");
         handleSaveImage();
       }}
-      className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
+      className="flex items-center gap-2 rounded-lg bg-blue-600 h-10 px-4 py-2 text-sm font-semibold text-white shadow-md transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
     >
       <DownloadIcon strokeWidth={2.5} />
       Save Image
@@ -292,10 +292,10 @@ function SquareToolCore({
         }
       />
 
-      <div className="flex gap-3">
+      <div className="flex gap-2">
         <button
           onClick={cancel}
-          className="rounded-lg bg-transparent px-4 py-2 text-sm font-medium text-white/60 hover:text-white transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/10 focus:bg-white/10"
+          className="rounded-lg bg-transparent h-10 px-4 py-2 text-sm font-medium text-white/60 hover:text-white transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/10 focus:bg-white/10"
         >
           Cancel
         </button>
