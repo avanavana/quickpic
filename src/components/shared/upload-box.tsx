@@ -32,17 +32,22 @@ export function UploadBox({
         className="flex flex-col items-center justify-center gap-4 w-full sm:w-container max-w-container rounded-xl border-2 border-dashed border-white/30 bg-white/5 p-6 backdrop-blur-sm"
       >
         <svg
-          className="h-8 w-8 text-gray-400"
-          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
           viewBox="0 0 24 24"
+          fill="none"
           stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="size-8 text-gray-500"
+          role="img"
+          aria-hidden="true"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-          />
+          <path d="M12 13v8"/>
+          <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
+          <path d="m8 17 4-4 4 4"/>
         </svg>
         <p className="font-medium text-sm text-gray-500">Drag and Drop</p>
         <p className="font-medium text-sm text-gray-500">or</p>
