@@ -8,6 +8,7 @@ import { ErrorMessage } from "@/components/shared/error-message";
 import { FetchFromUrlForm } from "@/components/shared/fetch-from-url-form";
 import { FileDropzone } from "@/components/shared/file-dropzone";
 import { ClipboardPasteIcon, DownloadIcon } from "@/components/shared/icons";
+import { PageTitle } from "@/components/shared/page-title";
 import { PreviewScale } from "@/components/shared/preview-scale";
 import { UploadBox } from "@/components/shared/upload-box";
 import { SVGScaleSelector } from "@/components/svg-scale-selector";
@@ -363,7 +364,7 @@ function SVGToolCore({
   );
 }
 
-export function SVGTool() {
+export function SVGTool({ title }: { title: string }) {
   const [error, setError] = useState<string | null>(null);
   const fileUploaderProps = useFileUploader({ accept: [".svg", "image/svg+xml"], onError: setError });
   const fileFetcherProps = useFileFetcher({ onError: setError });
@@ -375,6 +376,7 @@ export function SVGTool() {
       dropText="Drop SVG file"
       onError={setError}
     >
+      <PageTitle title={title} />
       <SVGToolCore
         fileUploaderProps={fileUploaderProps}
         fileFetcherProps={fileFetcherProps}

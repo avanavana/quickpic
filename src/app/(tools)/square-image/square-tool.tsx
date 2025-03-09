@@ -9,6 +9,7 @@ import { FetchFromUrlForm } from "@/components/shared/fetch-from-url-form";
 import { FileDropzone } from "@/components/shared/file-dropzone";
 import { ClipboardPasteIcon, DownloadIcon } from "@/components/shared/icons";
 import { OptionSelector } from "@/components/shared/option-selector";
+import { PageTitle } from "@/components/shared/page-title";
 import { PreviewScale } from "@/components/shared/preview-scale";
 import { UploadBox } from "@/components/shared/upload-box";
 
@@ -308,7 +309,7 @@ function SquareToolCore({
   );
 }
 
-export function SquareTool() {
+export function SquareTool({ title }: { title: string }) {
   const [error, setError] = useState<string | null>(null);
   const fileUploaderProps = useFileUploader({ onError: setError });
   const fileFetcherProps = useFileFetcher({ onError: setError });
@@ -320,6 +321,7 @@ export function SquareTool() {
       setCurrentFile={fileUploaderProps.handleFileUpload}
       onError={setError}
     >
+      <PageTitle title={title} />
       <SquareToolCore  
         fileUploaderProps={fileUploaderProps}
         fileFetcherProps={fileFetcherProps}

@@ -10,6 +10,7 @@ import { FetchFromUrlForm } from "@/components/shared/fetch-from-url-form";
 import { FileDropzone } from "@/components/shared/file-dropzone";
 import { ClipboardPasteIcon, DownloadIcon } from "@/components/shared/icons";
 import { OptionSelector } from "@/components/shared/option-selector";
+import { PageTitle } from "@/components/shared/page-title";
 import { PreviewScale } from "@/components/shared/preview-scale";
 import { UploadBox } from "@/components/shared/upload-box";
 
@@ -368,7 +369,7 @@ function RoundedToolCore({
   );
 }
 
-export function RoundedTool() {
+export function RoundedTool({ title }: { title: string }) {
   const [error, setError] = useState<string | null>(null);
   const fileUploaderProps = useFileUploader({ onError: setError });
   const fileFetcherProps = useFileFetcher({ onError: setError });
@@ -380,6 +381,7 @@ export function RoundedTool() {
       setCurrentFile={fileUploaderProps.handleFileUpload}
       onError={setError}
     >
+      <PageTitle title={title} />
       <RoundedToolCore
         fileUploaderProps={fileUploaderProps}
         fileFetcherProps={fileFetcherProps}
