@@ -127,7 +127,7 @@ function SquareToolCore({
   const router = useRouter();
 
   const [backgroundColor, setBackgroundColor] = useLocalStorage<
-    "black" | "white"
+    "black" | "white" | "transparent"
   >("squareTool_backgroundColor", "white");
 
   const [squareImageContent, setSquareImageContent] = useState<string | null>(
@@ -285,12 +285,13 @@ function SquareToolCore({
       {/* Background Controls */}
       <OptionSelector
         title="Background Color"
-        options={["white", "black"]}
+        options={["white", "black", "transparent"]}
         selected={backgroundColor}
         onChange={setBackgroundColor}
         formatOption={(option) =>
           option.charAt(0).toUpperCase() + option.slice(1)
         }
+        className="w-full"
       />
 
       <div className="flex gap-2">
