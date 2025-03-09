@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { usePlausible } from "next-plausible";
 
 import { BorderRadiusSelector } from "@/components/border-radius-selector";
@@ -13,7 +14,9 @@ import { UploadBox } from "@/components/shared/upload-box";
 
 import { useFileFetcher } from "@/hooks/use-file-fetcher";
 import { useFileUploader } from "@/hooks/use-file-uploader";
+import { useKeyDown } from "@/hooks/use-keydown";
 import { useLocalStorage } from "@/hooks/use-local-storage";
+import { isInteractiveElementFocused } from "@/lib/dom-utils";
 
 import { type ImageMetadata } from "@/lib/file-utils";
 import { type FileFetcherResult } from "@/hooks/use-file-fetcher";
@@ -205,6 +208,7 @@ function RoundedToolCore({
   error,
   onError,
  }: RoundedToolCoreProps) {
+  const router = useRouter();
   const [radius, setRadius] = useLocalStorage<Radius>("roundedTool_radius", 2);
   const [isCustomRadius, setIsCustomRadius] = useState(false);
   const [background, setBackground] = useLocalStorage<BackgroundOption>(
@@ -262,6 +266,25 @@ function RoundedToolCore({
     fileFetcherProps.imageContent,
     onError,
   ]);
+
+  // Run the cancel function when the user presses the Escape key on the preview screen,
+  // and navigate back to the home screen when the user presses Escape on the initial tool screen
+  useKeyDown("Escape", () => {
+    if (imageMetadata && imageContent) {
+      // Preview screen
+      if (isInteractiveElementFocused("ALL", ["option", "select"])) {
+        // if any option selector buttons are focused, blur them instead of going back to initial tool screen
+        (document.activeElement as HTMLButtonElement).blur();
+      } else {
+        // otherwise, cancel/go back to initial tool screen
+        cancel();
+      }
+    } else {
+      // Initial tool screen
+      if (isInteractiveElementFocused("INPUT")) return; // ignore if input is focused
+      router.push("/"); // otherwise, return to home screen
+    }
+  });
 
   if (!imageMetadata) {
     return (
