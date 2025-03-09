@@ -8,6 +8,7 @@ import { BorderRadiusSelector } from "@/components/border-radius-selector";
 import { ErrorMessage } from "@/components/shared/error-message";
 import { FetchFromUrlForm } from "@/components/shared/fetch-from-url-form";
 import { FileDropzone } from "@/components/shared/file-dropzone";
+import { ClipboardPasteIcon, DownloadIcon } from "@/components/shared/icons";
 import { OptionSelector } from "@/components/shared/option-selector";
 import { PreviewScale } from "@/components/shared/preview-scale";
 import { UploadBox } from "@/components/shared/upload-box";
@@ -177,22 +178,13 @@ function SaveAsPngButton({
           plausible("convert-image-to-png");
           void convertToPng();
         }}
-        className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
+        className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
       >
+        <DownloadIcon strokeWidth={2.5} />
         Save as PNG
       </button>
     </div>
   );
-}
-
-function ClipboardPasteIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-4 -ml-1 shrink-0">
-      <path d="M15 2H9a1 1 0 0 0-1 1v2c0 .6.4 1 1 1h6c.6 0 1-.4 1-1V3c0-.6-.4-1-1-1Z"/>
-      <path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2M16 4h2a2 2 0 0 1 2 2v2M11 14h10"/>
-      <path d="m17 10 4 4-4 4"/>
-    </svg>
-  )
 }
 
 type RoundedToolCoreProps = {
@@ -220,6 +212,8 @@ function RoundedToolCore({
   const [imageMetadata, setImageMetadata] = useState<ImageMetadata>(fileUploaderProps.imageMetadata);
   const [imageContent, setImageContent] = useState<string>(fileUploaderProps.imageContent);
   const [previewScale, setPreviewScale] = useState<number | null>(null);
+
+  const SubtitleIcon = <ClipboardPasteIcon className="-ml-1" />;
   
   const cancel = () => {
     fileUploaderProps.cancel();
@@ -292,7 +286,7 @@ function RoundedToolCore({
         <UploadBox
           title="Add rounded borders to your images. Quick and easy."
           subtitle="Allows pasting images from clipboard"
-          subtitleIcon={ClipboardPasteIcon}
+          subtitleIcon={SubtitleIcon}
           description="Upload Image"
           accept="image/*"
           onChange={fileUploaderProps.handleFileUploadEvent}

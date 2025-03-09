@@ -1,5 +1,7 @@
 import React, { useCallback, useState, useRef } from "react";
 
+import { UploadIcon } from "@/components/shared/icons";
+
 import { type FileTypeString, generateFileTypesString } from "@/lib/file-utils";
 
 interface FileDropzoneProps {
@@ -87,30 +89,13 @@ export function FileDropzone({
       onDragLeave={handleDragOut}
       onDragOver={handleDrag}
       onDrop={handleDrop}
-      className="h-full w-full"
+      className="size-full"
     >
       {isDragging && (
         <div className="fixed inset-0 z-50 p-8 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-md" />
           <div className="animate-in fade-in zoom-in relative flex flex-col size-full transform items-center justify-center rounded-xl border-2 border-dashed border-white/30 transition-all duration-200 ease-out">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="size-12 text-gray-500"
-              role="img"
-              aria-hidden="true"
-            >
-              <path d="M12 13v8"/>
-              <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
-              <path d="m8 17 4-4 4 4"/>
-            </svg>
+            <UploadIcon className="size-12 text-gray-500" />
             <p className="text-2xl font-semibold text-gray-500">{dropText}</p>
           </div>
         </div>

@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { GitHubIcon } from "@/components/shared/icons";
+
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col justify-between px-8 pb-4 font-[family-name:var(--font-geist-sans)]">
@@ -33,8 +35,9 @@ export default function Home() {
           href="https://github.com/t3dotgg/quickpic"
           target="_blank"
           rel="noopener noreferrer"
-          className="hover:underline"
+          className="inline-flex items-center gap-1 font-medium hover:text-gray-200 focus:text-gray-200 transition-colors duration-200"
         >
+          <GitHubIcon />
           View on GitHub
         </a>
       </footer>

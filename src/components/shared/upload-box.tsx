@@ -1,9 +1,11 @@
 import React from "react";
 
+import { UploadIcon } from "@/components/shared/icons";
+
 interface UploadBoxProps {
   title: string;
   subtitle?: string;
-  subtitleIcon?: React.ElementType;
+  subtitleIcon?: React.ReactElement;
   description: string;
   accept: string;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -12,7 +14,7 @@ interface UploadBoxProps {
 export function UploadBox({
   title,
   subtitle,
-  subtitleIcon: SubtitleIcon,
+  subtitleIcon,
   description,
   accept,
   onChange,
@@ -23,7 +25,7 @@ export function UploadBox({
         <p id="upload-box-title" className="text-center text-white">{title}</p>
         {subtitle && (
           <p id="upload-box-subtitle" className="flex gap-1 items-center rounded-full border border-white/30 bg-white/5 px-3 py-0.5 text-center text-sm text-white/60">
-            {SubtitleIcon && <SubtitleIcon />}
+            {subtitleIcon}
             {subtitle}
           </p>
         )}
@@ -34,24 +36,7 @@ export function UploadBox({
         aria-describedby="upload-box-instructions"
         className="flex flex-col items-center justify-center gap-4 w-full sm:w-container max-w-container rounded-xl border-2 border-dashed border-white/30 bg-white/5 p-6 backdrop-blur-sm"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="size-8 text-gray-500"
-          role="img"
-          aria-hidden="true"
-        >
-          <path d="M12 13v8"/>
-          <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
-          <path d="m8 17 4-4 4 4"/>
-        </svg>
+        <UploadIcon className="size-8 text-gray-500" />
         <p className="font-medium text-sm text-gray-500">Drag and Drop</p>
         <p className="font-medium text-sm text-gray-500">or</p>
         <label
