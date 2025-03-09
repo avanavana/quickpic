@@ -22,23 +22,26 @@ export function OptionSelector<T extends string | number>({
   const highlightRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (selectedRef.current && highlightRef.current && containerRef.current) {
-      const container = containerRef.current;
-      const selected = selectedRef.current;
-      const highlight = highlightRef.current;
+    if (!selectedRef.current || !highlightRef.current || !containerRef.current) return;
+
+    // prevent layout thrashing
+    requestAnimationFrame(() => {
+      const container = containerRef.current!;
+      const selected = selectedRef.current!;
+      const highlight = highlightRef.current!;
 
       const containerRect = container.getBoundingClientRect();
       const selectedRect = selected.getBoundingClientRect();
 
       highlight.style.left = `${selectedRect.left - containerRect.left}px`;
       highlight.style.width = `${selectedRect.width}px`;
-    }
+    });
   }, [selected]);
 
   return (
     <div className="flex flex-col items-center gap-2">
       <span className="text-sm text-white/60">{title}</span>
-      <div className="flex flex-col items-center gap-2">
+      <div className="flex flex-col items-center justify-center gap-2">
         <div
           ref={containerRef}
           className="relative inline-flex rounded-lg bg-white/5 p-1"
@@ -52,10 +55,10 @@ export function OptionSelector<T extends string | number>({
               key={option}
               ref={option === selected ? selectedRef : null}
               onClick={() => onChange(option)}
-              className={`relative rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+              className={`option relative rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-none ${
                 option === selected
                   ? "text-white"
-                  : "text-white/80 hover:text-white"
+                  : "text-white/60 hover:text-white focus:bg-white/10"
               }`}
             >
               {formatOption(option)}

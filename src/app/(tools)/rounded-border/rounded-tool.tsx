@@ -209,7 +209,7 @@ function RoundedToolCore({
   onError,
  }: RoundedToolCoreProps) {
   const router = useRouter();
-  const [radius, setRadius] = useLocalStorage<Radius>("roundedTool_radius", 2);
+  const [radius, setRadius] = useLocalStorage<Radius | null>("roundedTool_radius", 2);
   const [isCustomRadius, setIsCustomRadius] = useState(false);
   const [background, setBackground] = useLocalStorage<BackgroundOption>(
     "roundedTool_background",
@@ -340,7 +340,7 @@ function RoundedToolCore({
       <BorderRadiusSelector
         title="Border Radius"
         options={[2, 4, 8, 16, 32, 64]}
-        selected={isCustomRadius ? "custom" : radius}
+        selected={isCustomRadius ? "custom" : (radius ?? 1)}
         onChange={handleRadiusChange}
         customValue={radius}
         onCustomValueChange={setRadius}
@@ -365,7 +365,7 @@ function RoundedToolCore({
         </button>
         <SaveAsPngButton
           imageContent={imageContent}
-          radius={radius}
+          radius={radius ?? 1}
           background={background}
           imageMetadata={imageMetadata}
         />

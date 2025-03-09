@@ -202,7 +202,7 @@ function SVGToolCore({
   const router = useRouter();
   const [scale, setScale] = useLocalStorage<Scale>("svgTool_scale", 1);
 
-  const [customScale, setCustomScale] = useLocalStorage<number>(
+  const [customScale, setCustomScale] = useLocalStorage<number | null>(
     "svgTool_customScale",
     1,
   );
@@ -344,7 +344,7 @@ function SVGToolCore({
       {/* Scale Controls */}
       <SVGScaleSelector
         title="Scale Factor"
-        options={[1, 2, 4, 8, 16, 32, 64]}
+        options={[0.5, 1, 2, 4, 8, 16, 32, 64]}
         selected={scale}
         onChange={setScale}
         customValue={customScale}
