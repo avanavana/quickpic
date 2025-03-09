@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { GitHubIcon } from "@/components/shared/icons";
+import { Footer } from "@/components/shared/footer";
 
 export default function Home() {
   return (
@@ -30,17 +30,7 @@ export default function Home() {
           </Link>
         </div>
       </main>
-      <footer className="mt-8 text-center text-sm text-gray-500">
-        <a
-          href="https://github.com/t3dotgg/quickpic"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 font-medium hover:text-gray-200 focus:text-gray-200 transition-colors duration-200"
-        >
-          <GitHubIcon />
-          View on GitHub
-        </a>
-      </footer>
+      <Footer />
     </div>
   );
 }
