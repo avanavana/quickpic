@@ -1,10 +1,20 @@
 "use client";
-import { usePlausible } from "next-plausible";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useLocalStorage } from "@/hooks/use-local-storage";
 
+import { useEffect, useMemo, useRef, useState } from "react";
+import { usePlausible } from "next-plausible";
+
+import { FetchFromUrlForm } from "@/components/shared/fetch-from-url-form";
+import { FileDropzone } from "@/components/shared/file-dropzone";
 import { UploadBox } from "@/components/shared/upload-box";
 import { SVGScaleSelector } from "@/components/svg-scale-selector";
+
+import { useFileFetcher } from "@/hooks/use-file-fetcher";
+import { useFileUploader } from "@/hooks/use-file-uploader";
+import { useLocalStorage } from "@/hooks/use-local-storage";
+
+import { type FileFetcherResult } from "@/hooks/use-file-fetcher";
+import { type FileUploaderResult } from "@/hooks/use-file-uploader";
+import { type ImageMetadata } from "@/lib/file-utils";
 
 export type Scale = "custom" | number;
 
@@ -131,33 +141,88 @@ function SaveAsPngButton({
   );
 }
 
-import {
-  type FileUploaderResult,
-  useFileUploader,
-} from "@/hooks/use-file-uploader";
-import { FileDropzone } from "@/components/shared/file-dropzone";
+type SVGToolCoreProps = {
+  fileUploaderProps: FileUploaderResult;
+  fileFetcherProps: FileFetcherResult;
+};
 
-function SVGToolCore(props: { fileUploaderProps: FileUploaderResult }) {
-  const { rawContent, imageMetadata, handleFileUploadEvent, cancel } =
-    props.fileUploaderProps;
-
+function SVGToolCore({
+  fileUploaderProps,
+  fileFetcherProps,
+}: SVGToolCoreProps) {
   const [scale, setScale] = useLocalStorage<Scale>("svgTool_scale", 1);
   const [customScale, setCustomScale] = useLocalStorage<number>(
     "svgTool_customScale",
     1,
   );
 
+  const [imageMetadata, setImageMetadata] = useState<ImageMetadata>(fileUploaderProps.imageMetadata);
+  const [imageContent, setImageContent] = useState<string>(fileUploaderProps.imageContent);
+  const [rawContent, setRawContent] = useState<string>(fileUploaderProps.rawContent);
+
   // Get the actual numeric scale value
   const effectiveScale = scale === "custom" ? customScale : scale;
 
-  if (!imageMetadata)
+  const cancel = () => {
+    fileUploaderProps.cancel();
+    fileFetcherProps.cancel();
+    setImageMetadata(null);
+    setImageContent('');
+    setRawContent('');
+  }
+
+  useEffect(() => {
+    // Grab metadata and content from method of file upload
+    // Make sure SVG metadata is normalized in case width/height are not explicitly defined
+    let metadata: ImageMetadata | null = null;
+    let content: string | null = null;
+    let raw: string | null = null;
+
+    if (fileUploaderProps.imageMetadata) {
+      metadata = fileUploaderProps.imageMetadata;
+      content = fileUploaderProps.imageContent;
+      raw = fileUploaderProps.rawContent;
+    } else {
+      metadata = fileFetcherProps.imageMetadata;
+      content = fileFetcherProps.imageContent;
+      raw = fileFetcherProps.rawContent;
+    }
+
+    if (metadata) {
+      setImageMetadata(metadata);
+      setImageContent(content);
+      setRawContent(raw);
+    } else {
+      setImageMetadata(null);
+      setImageContent('');
+      setRawContent('');
+    }
+  }, [
+    fileUploaderProps.imageMetadata,
+    fileUploaderProps.imageContent,
+    fileUploaderProps.rawContent,
+    fileFetcherProps.imageMetadata,
+    fileFetcherProps.imageContent,
+    fileFetcherProps.rawContent,
+  ]);
+
+  if (!imageMetadata || !imageContent)
     return (
-      <UploadBox
-        title="Make SVGs into PNGs. Also makes them bigger. (100% free btw.)"
-        description="Upload SVG"
-        accept=".svg"
-        onChange={handleFileUploadEvent}
-      />
+      <div className='flex flex-col items-center gap-4'>
+        <UploadBox
+          title="Make SVGs into PNGs. Also makes them bigger. (100% free btw.)"
+          description="Upload SVG"
+          accept=".svg"
+          onChange={fileUploaderProps.handleFileUploadEvent}
+        />
+
+        <FetchFromUrlForm
+          accept=".svg"
+          error={fileFetcherProps.error}
+          pending={fileFetcherProps.pending}
+          handleSubmit={fileFetcherProps.handleFetchFile}
+        />
+      </div>
     );
 
   return (
@@ -217,14 +282,19 @@ function SVGToolCore(props: { fileUploaderProps: FileUploaderResult }) {
 }
 
 export function SVGTool() {
-  const fileUploaderProps = useFileUploader();
+  const fileUploaderProps = useFileUploader({ accept: [".svg", "image/svg+xml"] });
+  const fileFetcherProps = useFileFetcher();
+
   return (
     <FileDropzone
       setCurrentFile={fileUploaderProps.handleFileUpload}
       acceptedFileTypes={["image/svg+xml", ".svg"]}
       dropText="Drop SVG file"
     >
-      <SVGToolCore fileUploaderProps={fileUploaderProps} />
+      <SVGToolCore
+        fileUploaderProps={fileUploaderProps}
+        fileFetcherProps={fileFetcherProps}
+      />
     </FileDropzone>
   );
 }

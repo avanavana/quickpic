@@ -1,19 +1,31 @@
 "use client";
 
-import { usePlausible } from "next-plausible";
-import { useLocalStorage } from "@/hooks/use-local-storage";
-import { UploadBox } from "@/components/shared/upload-box";
-import { OptionSelector } from "@/components/shared/option-selector";
-import { FileDropzone } from "@/components/shared/file-dropzone";
-import {
-  type FileUploaderResult,
-  useFileUploader,
-} from "@/hooks/use-file-uploader";
 import { useEffect, useState } from "react";
+import { usePlausible } from "next-plausible";
 
-function SquareToolCore(props: { fileUploaderProps: FileUploaderResult }) {
-  const { imageContent, imageMetadata, handleFileUploadEvent, cancel } =
-    props.fileUploaderProps;
+import { FetchFromUrlForm } from "@/components/shared/fetch-from-url-form";
+import { FileDropzone } from "@/components/shared/file-dropzone";
+import { OptionSelector } from "@/components/shared/option-selector";
+import { UploadBox } from "@/components/shared/upload-box";
+
+import { useFileFetcher } from "@/hooks/use-file-fetcher";
+import { useFileUploader } from "@/hooks/use-file-uploader";
+import { useLocalStorage } from "@/hooks/use-local-storage";
+
+import { type FileFetcherResult } from "@/hooks/use-file-fetcher";
+import { type FileUploaderResult } from "@/hooks/use-file-uploader";
+import { type ImageMetadata } from "@/lib/file-utils";
+
+type SquareToolCoreProps = {
+  fileUploaderProps: FileUploaderResult;
+  fileFetcherProps: FileFetcherResult;
+};
+
+function SquareToolCore({
+  fileUploaderProps,
+  fileFetcherProps,
+}: SquareToolCoreProps) {
+  const plausible = usePlausible();
 
   const [backgroundColor, setBackgroundColor] = useLocalStorage<
     "black" | "white"
@@ -22,6 +34,58 @@ function SquareToolCore(props: { fileUploaderProps: FileUploaderResult }) {
   const [squareImageContent, setSquareImageContent] = useState<string | null>(
     null,
   );
+
+  const [imageMetadata, setImageMetadata] = useState<ImageMetadata>(fileUploaderProps.imageMetadata);
+  const [imageContent, setImageContent] = useState<string>(fileUploaderProps.imageContent);
+
+  const handleSaveImage = () => {
+    if (squareImageContent && imageMetadata) {
+      const link = document.createElement("a");
+      link.href = squareImageContent;
+      const originalFileName = imageMetadata.name;
+      const fileNameWithoutExtension =
+        originalFileName.substring(0, originalFileName.lastIndexOf(".")) ||
+        originalFileName;
+      link.download = `${fileNameWithoutExtension}-squared.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+  
+  const cancel = () => {
+    fileUploaderProps.cancel();
+    fileFetcherProps.cancel();
+    setImageMetadata(null);
+    setImageContent('');
+  }
+
+  useEffect(() => {
+    // Grab metadata and content from method of file upload
+    let metadata: ImageMetadata | null = null;
+    let content: string | null = null;
+
+    if (fileUploaderProps.imageMetadata) {
+      metadata = fileUploaderProps.imageMetadata;
+      content = fileUploaderProps.imageContent;
+    } else {
+      metadata = fileFetcherProps.imageMetadata;
+      content = fileFetcherProps.imageContent;
+    }
+
+    if (metadata) {
+      setImageMetadata(metadata);
+      setImageContent(content);
+    } else {
+      setImageMetadata(null);
+      setImageContent('');
+    }
+  }, [
+    fileUploaderProps.imageMetadata,
+    fileUploaderProps.imageContent,
+    fileFetcherProps.imageMetadata,
+    fileFetcherProps.imageContent,
+  ]);
 
   useEffect(() => {
     if (imageContent && imageMetadata) {
@@ -49,32 +113,24 @@ function SquareToolCore(props: { fileUploaderProps: FileUploaderResult }) {
     }
   }, [imageContent, imageMetadata, backgroundColor]);
 
-  const handleSaveImage = () => {
-    if (squareImageContent && imageMetadata) {
-      const link = document.createElement("a");
-      link.href = squareImageContent;
-      const originalFileName = imageMetadata.name;
-      const fileNameWithoutExtension =
-        originalFileName.substring(0, originalFileName.lastIndexOf(".")) ||
-        originalFileName;
-      link.download = `${fileNameWithoutExtension}-squared.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  };
-
-  const plausible = usePlausible();
-
   if (!imageMetadata) {
     return (
-      <UploadBox
-        title="Create square images with custom backgrounds. Fast and free."
-        subtitle="Allows pasting images from clipboard"
-        description="Upload Image"
-        accept="image/*"
-        onChange={handleFileUploadEvent}
-      />
+      <div className='flex flex-col items-center gap-4'>
+        <UploadBox
+          title="Create square images with custom backgrounds. Fast and free."
+          subtitle="Allows pasting images from clipboard"
+          description="Upload Image"
+          accept="image/*"
+          onChange={fileUploaderProps.handleFileUploadEvent}
+        />
+
+        <FetchFromUrlForm
+          accept="image/*"
+          error={fileFetcherProps.error}
+          pending={fileFetcherProps.pending}
+          handleSubmit={fileFetcherProps.handleFetchFile}
+        />
+      </div>
     );
   }
 
@@ -139,14 +195,18 @@ function SquareToolCore(props: { fileUploaderProps: FileUploaderResult }) {
 
 export function SquareTool() {
   const fileUploaderProps = useFileUploader();
+  const fileFetcherProps = useFileFetcher();
 
   return (
     <FileDropzone
-      setCurrentFile={fileUploaderProps.handleFileUpload}
       acceptedFileTypes={["image/*", ".jpg", ".jpeg", ".png", ".webp", ".svg"]}
       dropText="Drop image file"
+      setCurrentFile={fileUploaderProps.handleFileUpload}
     >
-      <SquareToolCore fileUploaderProps={fileUploaderProps} />
+      <SquareToolCore  
+        fileUploaderProps={fileUploaderProps}
+        fileFetcherProps={fileFetcherProps}
+      />
     </FileDropzone>
   );
 }

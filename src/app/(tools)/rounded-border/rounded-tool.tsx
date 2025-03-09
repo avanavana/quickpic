@@ -1,15 +1,21 @@
 "use client";
-import { usePlausible } from "next-plausible";
+
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useLocalStorage } from "@/hooks/use-local-storage";
-import { UploadBox } from "@/components/shared/upload-box";
-import { OptionSelector } from "@/components/shared/option-selector";
+import { usePlausible } from "next-plausible";
+
 import { BorderRadiusSelector } from "@/components/border-radius-selector";
-import {
-  useFileUploader,
-  type FileUploaderResult,
-} from "@/hooks/use-file-uploader";
+import { FetchFromUrlForm } from "@/components/shared/fetch-from-url-form";
 import { FileDropzone } from "@/components/shared/file-dropzone";
+import { OptionSelector } from "@/components/shared/option-selector";
+import { UploadBox } from "@/components/shared/upload-box";
+
+import { useFileFetcher } from "@/hooks/use-file-fetcher";
+import { useFileUploader } from "@/hooks/use-file-uploader";
+import { useLocalStorage } from "@/hooks/use-local-storage";
+
+import { type ImageMetadata } from "@/lib/file-utils";
+import { type FileFetcherResult } from "@/hooks/use-file-fetcher";
+import { type FileUploaderResult } from "@/hooks/use-file-uploader";
 
 type Radius = number;
 
@@ -151,15 +157,31 @@ function SaveAsPngButton({
   );
 }
 
-function RoundedToolCore(props: { fileUploaderProps: FileUploaderResult }) {
-  const { imageContent, imageMetadata, handleFileUploadEvent, cancel } =
-    props.fileUploaderProps;
+type RoundedToolCoreProps = {
+  fileUploaderProps: FileUploaderResult;
+  fileFetcherProps: FileFetcherResult;
+};
+
+function RoundedToolCore({
+  fileUploaderProps,
+  fileFetcherProps,
+ }: RoundedToolCoreProps) {
   const [radius, setRadius] = useLocalStorage<Radius>("roundedTool_radius", 2);
   const [isCustomRadius, setIsCustomRadius] = useState(false);
   const [background, setBackground] = useLocalStorage<BackgroundOption>(
     "roundedTool_background",
     "transparent",
   );
+
+  const [imageMetadata, setImageMetadata] = useState<ImageMetadata>(fileUploaderProps.imageMetadata);
+  const [imageContent, setImageContent] = useState<string>(fileUploaderProps.imageContent);
+  
+  const cancel = () => {
+    fileUploaderProps.cancel();
+    fileFetcherProps.cancel();
+    setImageMetadata(null);
+    setImageContent('');
+  }
 
   const handleRadiusChange = (value: number | "custom") => {
     if (value === "custom") {
@@ -170,15 +192,51 @@ function RoundedToolCore(props: { fileUploaderProps: FileUploaderResult }) {
     }
   };
 
+  useEffect(() => {
+    // Grab metadata and content from method of file upload
+    let metadata: ImageMetadata | null = null;
+    let content: string | null = null;
+
+    if (fileUploaderProps.imageMetadata) {
+      metadata = fileUploaderProps.imageMetadata;
+      content = fileUploaderProps.imageContent;
+    } else {
+      metadata = fileFetcherProps.imageMetadata;
+      content = fileFetcherProps.imageContent;
+    }
+
+    if (metadata) {
+      setImageMetadata(metadata);
+      setImageContent(content);
+    } else {
+      setImageMetadata(null);
+      setImageContent('');
+    }
+  }, [
+    fileUploaderProps.imageMetadata,
+    fileUploaderProps.imageContent,
+    fileFetcherProps.imageMetadata,
+    fileFetcherProps.imageContent,
+  ]);
+
   if (!imageMetadata) {
     return (
-      <UploadBox
-        title="Add rounded borders to your images. Quick and easy."
-        subtitle="Allows pasting images from clipboard"
-        description="Upload Image"
-        accept="image/*"
-        onChange={handleFileUploadEvent}
-      />
+      <div className='flex flex-col items-center gap-4'>
+        <UploadBox
+          title="Add rounded borders to your images. Quick and easy."
+          subtitle="Allows pasting images from clipboard"
+          description="Upload Image"
+          accept="image/*"
+          onChange={fileUploaderProps.handleFileUploadEvent}
+        />
+
+        <FetchFromUrlForm
+          accept="image/*"
+          error={fileFetcherProps.error}
+          pending={fileFetcherProps.pending}
+          handleSubmit={fileFetcherProps.handleFetchFile}
+        />
+      </div>
     );
   }
 
@@ -241,14 +299,18 @@ function RoundedToolCore(props: { fileUploaderProps: FileUploaderResult }) {
 
 export function RoundedTool() {
   const fileUploaderProps = useFileUploader();
+  const fileFetcherProps = useFileFetcher();
 
   return (
     <FileDropzone
-      setCurrentFile={fileUploaderProps.handleFileUpload}
       acceptedFileTypes={["image/*", ".jpg", ".jpeg", ".png", ".webp", ".svg"]}
       dropText="Drop image file"
+      setCurrentFile={fileUploaderProps.handleFileUpload}
     >
-      <RoundedToolCore fileUploaderProps={fileUploaderProps} />
+      <RoundedToolCore
+        fileUploaderProps={fileUploaderProps}
+        fileFetcherProps={fileFetcherProps}
+      />
     </FileDropzone>
   );
 }
