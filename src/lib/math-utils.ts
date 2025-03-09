@@ -1,5 +1,5 @@
 /**
- *  Rounding function for neatly displaying pixel values
+ *  Rounding function for neatly displaying pixel values to a maximum of 2 decimal places.
  * 
  *  Examples:
  *  formatNumber(124)                 // 124
