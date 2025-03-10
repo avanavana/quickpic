@@ -57,6 +57,19 @@ export function ClipboardPasteIcon({ className, strokeWidth }: IconProps) {
   );
 }
 
+export function CornerRounderIcon({ className, strokeWidth }: IconProps) {
+  return (
+    <svg
+      {...defaultProps}
+      strokeWidth={strokeWidth ?? 2}
+      className={`size-4 shrink-0 ${className}`}
+    >
+      <path d="M21 11a8 8 0 0 0-8-8" />
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    </svg>
+  );
+}
+
 export function DownloadIcon({ className, strokeWidth }: IconProps) {
   return (
     <svg
@@ -106,6 +119,40 @@ export function LinkIcon({ className, strokeWidth }: IconProps) {
     >
       <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
       <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+    </svg>
+  );
+}
+
+export function SquareImageIcon({ className, strokeWidth }: IconProps) {
+  return (
+    <svg
+      {...defaultProps}
+      strokeWidth={strokeWidth ?? 2}
+      className={`size-4 shrink-0 ${className}`}
+    >
+      <path d="M16 3h5v5" />
+      <path d="M17 21h2a2 2 0 0 0 2-2" />
+      <path d="M21 12v3" />
+      <path d="m21 3-5 5" />
+      <path d="M3 7V5a2 2 0 0 1 2-2" />
+      <path d="m5 21 4.144-4.144a1.21 1.21 0 0 1 1.712 0L13 19" />
+      <path d="M9 3h3" />
+      <rect x="3" y="11" width="10" height="10" rx="1" />
+    </svg>
+  );
+}
+
+export function SvgToPngIcon({ className, strokeWidth }: IconProps) {
+  return (
+    <svg
+      {...defaultProps}
+      strokeWidth={strokeWidth ?? 2}
+      className={`size-4 shrink-0 ${className}`}
+    >
+      <path d="M4 16a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2" />
+      <rect width="14" height="14" x="8" y="8" rx="2" />
+      <circle cx="14" cy="14" r="2" />
+      <path d="m13.4 22 4.7-3.9c.8-.8 2-.8 2.8 0l1.1 1.1" />
     </svg>
   );
 }
