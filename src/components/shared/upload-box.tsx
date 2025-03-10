@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useRef } from "react";
 
 import { UploadIcon } from "@/components/shared/icons";
+
+import { useKeyDown } from "@/hooks/use-keydown";
 
 interface UploadBoxProps {
   title: string;
@@ -19,6 +21,18 @@ export function UploadBox({
   accept,
   onChange,
 }: UploadBoxProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputLabelRef = useRef<HTMLLabelElement>(null);
+
+  useKeyDown(["Enter", "Space"], () => {
+    if (
+      fileInputRef.current &&
+      document.activeElement === fileInputLabelRef.current
+    ) {
+      fileInputRef.current.click();
+    }
+  });
+
   return (
     <div className="flex w-full flex-col items-center justify-center gap-4">
       <div className="flex flex-col items-center gap-2">
@@ -45,12 +59,14 @@ export function UploadBox({
         <p className="text-sm font-medium text-gray-500">Drag and Drop</p>
         <p className="text-sm font-medium text-gray-500">or</p>
         <label
+          ref={fileInputLabelRef}
           role="button"
           tabIndex={0}
           className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
         >
           <span>{description}</span>
           <input
+            ref={fileInputRef}
             type="file"
             onChange={onChange}
             accept={accept}
