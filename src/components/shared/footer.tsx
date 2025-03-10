@@ -7,7 +7,7 @@ export function Footer() {
         href="https://github.com/t3dotgg/quickpic"
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 px-3 py-1 text-sm font-medium hover:text-gray-200 focus:text-gray-200 transition-colors duration-200"
+        className="inline-flex items-center gap-2 px-3 py-1 text-sm font-medium transition-colors duration-200 hover:text-gray-200 focus:text-gray-200"
       >
         <GitHubIcon />
         {/* <RepositoryIcon strokeWidth={1.5} /> */}
@@ -17,5 +17,5 @@ export function Footer() {
         </span>
       </a>
     </footer>
-  )
+  );
 }

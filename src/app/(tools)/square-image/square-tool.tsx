@@ -50,29 +50,33 @@ const ImageRenderer = ({
       const previewScaleFactor = Math.min(
         imageContainerWidth / imageMetadata.width,
         imageContainerWidth / imageMetadata.height,
-        1 // Prevent upscaling
+        1, // Prevent upscaling
       );
 
       setPreviewScale(previewScaleFactor < 1 ? previewScaleFactor : null);
       setInternalScale(previewScaleFactor);
-    }
+    };
 
     updatePreviewScaleFactor();
     const resizeObserver = new ResizeObserver(updatePreviewScaleFactor);
     resizeObserver.observe(container);
-    
+
     return () => resizeObserver.disconnect();
   }, [imageContent, imageMetadata, imageContainer, setPreviewScale]);
 
   return imageContent ? (
-      <img
-        src={imageContent}
-        width={Math.max(imageMetadata.width, imageMetadata.height) * internalScale}
-        height={Math.max(imageMetadata.width, imageMetadata.height) * internalScale}
-        alt="Preview"
-        className={backgroundColor === "transparent" ? "checkerboard" : ""}
-        style={{ objectFit: "contain" }}
-      />
+    <img
+      src={imageContent}
+      width={
+        Math.max(imageMetadata.width, imageMetadata.height) * internalScale
+      }
+      height={
+        Math.max(imageMetadata.width, imageMetadata.height) * internalScale
+      }
+      alt="Preview"
+      className={backgroundColor === "transparent" ? "checkerboard" : ""}
+      style={{ objectFit: "contain" }}
+    />
   ) : null;
 };
 
@@ -96,7 +100,7 @@ function SaveSquareImageButton({
       link.click();
       document.body.removeChild(link);
     }
-  }
+  };
 
   const plausible = usePlausible();
 
@@ -106,12 +110,12 @@ function SaveSquareImageButton({
         plausible("create-square-image");
         handleSaveImage();
       }}
-      className="flex items-center gap-2 rounded-lg bg-blue-600 h-10 px-4 py-2 text-sm font-semibold text-white text-left whitespace-nowrap shadow-md transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
+      className="flex h-10 items-center gap-2 whitespace-nowrap rounded-lg bg-blue-600 px-4 py-2 text-left text-sm font-semibold text-white shadow-md transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
     >
       <DownloadIcon strokeWidth={2.5} />
       Save Image
     </button>
-  )
+  );
 }
 
 type SquareToolCoreProps = {
@@ -138,19 +142,23 @@ function SquareToolCore({
   );
 
   const imageContainerRef = useRef<HTMLDivElement>(null);
-  const [imageMetadata, setImageMetadata] = useState<ImageMetadata>(fileUploaderProps.imageMetadata);
-  const [imageContent, setImageContent] = useState<string>(fileUploaderProps.imageContent);
+  const [imageMetadata, setImageMetadata] = useState<ImageMetadata>(
+    fileUploaderProps.imageMetadata,
+  );
+  const [imageContent, setImageContent] = useState<string>(
+    fileUploaderProps.imageContent,
+  );
   const [previewScale, setPreviewScale] = useState<number | null>(null);
 
   const SubtitleIcon = <ClipboardPasteIcon className="-ml-1" />;
-  
+
   const cancel = () => {
     fileUploaderProps.cancel();
     fileFetcherProps.cancel();
     setImageMetadata(null);
-    setImageContent('');
+    setImageContent("");
     setPreviewScale(null);
-  }
+  };
 
   useEffect(() => {
     // Grab metadata and content from method of file upload
@@ -171,7 +179,7 @@ function SquareToolCore({
       onError(null);
     } else {
       setImageMetadata(null);
-      setImageContent('');
+      setImageContent("");
     }
   }, [
     fileUploaderProps.imageMetadata,
@@ -228,7 +236,7 @@ function SquareToolCore({
 
   if (!imageMetadata) {
     return (
-      <div className='flex flex-col items-center gap-4'>
+      <div className="flex flex-col items-center gap-4">
         <UploadBox
           title="Create square images with custom backgrounds. Fast and free."
           subtitle="Allows pasting images from clipboard"
@@ -253,7 +261,10 @@ function SquareToolCore({
   return (
     <div className="mx-auto flex max-w-2xl flex-col items-center justify-center gap-6 p-6">
       {/* Preview Section */}
-      <div ref={imageContainerRef} className="flex w-full flex-col items-center gap-4 rounded-xl">
+      <div
+        ref={imageContainerRef}
+        className="flex w-full flex-col items-center gap-4 rounded-xl"
+      >
         <PreviewScale previewScale={previewScale} />
         <ImageRenderer
           backgroundColor={backgroundColor}
@@ -262,7 +273,7 @@ function SquareToolCore({
           imageMetadata={imageMetadata}
           setPreviewScale={setPreviewScale}
         />
-        <p className="text-lg font-medium text-white/80 break-all">
+        <p className="break-all text-lg font-medium text-white/80">
           {imageMetadata.name}
         </p>
       </div>
@@ -270,15 +281,19 @@ function SquareToolCore({
       {/* Size Information */}
       <div className="flex gap-6 text-base">
         <div className="flex flex-col items-center rounded-lg bg-white/5 p-3">
-          <span className="text-sm text-white/60 text-center whitespace-nowrap">Original Size</span>
-          <span className="font-medium text-white text-center">
+          <span className="whitespace-nowrap text-center text-sm text-white/60">
+            Original Size
+          </span>
+          <span className="text-center font-medium text-white">
             {imageMetadata.width} × {imageMetadata.height}
           </span>
         </div>
 
         <div className="flex flex-col items-center rounded-lg bg-white/5 p-3">
-          <span className="text-sm text-white/60 text-center whitespace-nowrap">Square Size</span>
-          <span className="font-medium text-white text-center">
+          <span className="whitespace-nowrap text-center text-sm text-white/60">
+            Square Size
+          </span>
+          <span className="text-center font-medium text-white">
             {Math.max(imageMetadata.width, imageMetadata.height)}
             {" × "}
             {Math.max(imageMetadata.width, imageMetadata.height)}
@@ -301,7 +316,7 @@ function SquareToolCore({
       <div className="flex gap-2">
         <button
           onClick={cancel}
-          className="rounded-lg bg-transparent h-10 px-4 py-2 text-sm font-medium text-white/60 hover:text-white transition-colors duration-200 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/10 focus:bg-white/10"
+          className="h-10 rounded-lg bg-transparent px-4 py-2 text-sm font-medium text-white/60 transition-colors duration-200 hover:bg-white/10 hover:text-white focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/10"
         >
           Cancel
         </button>
@@ -327,7 +342,7 @@ export function SquareTool({ title }: { title: string }) {
       onError={setError}
     >
       <PageTitle title={title} />
-      <SquareToolCore  
+      <SquareToolCore
         fileUploaderProps={fileUploaderProps}
         fileFetcherProps={fileFetcherProps}
         error={error}

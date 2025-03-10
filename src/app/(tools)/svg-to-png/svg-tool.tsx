@@ -108,7 +108,7 @@ function SVGRenderer({
   imageContent,
   imageMetadata,
   setPreviewScale,
- }: SVGRendererProps) {
+}: SVGRendererProps) {
   const [internalScale, setInternalScale] = useState<number>(1);
 
   useEffect(() => {
@@ -121,17 +121,17 @@ function SVGRenderer({
       const previewScaleFactor = Math.min(
         imageContainerWidth / imageMetadata.width,
         imageContainerWidth / imageMetadata.height,
-        1 // Prevent upscaling
+        1, // Prevent upscaling
       );
 
       setPreviewScale(previewScaleFactor < 1 ? previewScaleFactor : null);
       setInternalScale(previewScaleFactor);
-    }
+    };
 
     updatePreviewScaleFactor();
     const resizeObserver = new ResizeObserver(updatePreviewScaleFactor);
     resizeObserver.observe(container);
-    
+
     return () => resizeObserver.disconnect();
   }, [imageContent, imageMetadata, imageContainer, setPreviewScale]);
 
@@ -142,9 +142,8 @@ function SVGRenderer({
       width={imageMetadata.width * internalScale}
       height={imageMetadata.height * internalScale}
       style={{
-        backgroundColor: backgroundColor === "light"
-          ? "var(--foreground)"
-          : "transparent",
+        backgroundColor:
+          backgroundColor === "light" ? "var(--foreground)" : "transparent",
         objectFit: "contain",
       }}
     />
@@ -178,7 +177,7 @@ function SaveAsPngButton({
           plausible("convert-svg-to-png");
           void convertToPng();
         }}
-        className="flex items-center gap-2 rounded-lg bg-blue-600 h-10 px-4 py-2 text-sm font-semibold text-white text-left whitespace-nowrap shadow-md transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
+        className="flex h-10 items-center gap-2 whitespace-nowrap rounded-lg bg-blue-600 px-4 py-2 text-left text-sm font-semibold text-white shadow-md transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
       >
         <DownloadIcon strokeWidth={2.5} />
         Save as PNG
@@ -213,9 +212,15 @@ function SVGToolCore({
   >("svgTool_previewBackgroundColor", "dark");
 
   const imageContainerRef = useRef<HTMLDivElement>(null);
-  const [imageMetadata, setImageMetadata] = useState<ImageMetadata>(fileUploaderProps.imageMetadata);
-  const [imageContent, setImageContent] = useState<string>(fileUploaderProps.imageContent);
-  const [rawContent, setRawContent] = useState<string>(fileUploaderProps.rawContent);
+  const [imageMetadata, setImageMetadata] = useState<ImageMetadata>(
+    fileUploaderProps.imageMetadata,
+  );
+  const [imageContent, setImageContent] = useState<string>(
+    fileUploaderProps.imageContent,
+  );
+  const [rawContent, setRawContent] = useState<string>(
+    fileUploaderProps.rawContent,
+  );
   const [previewScale, setPreviewScale] = useState<number | null>(null);
 
   // Get the actual numeric scale value
@@ -227,10 +232,10 @@ function SVGToolCore({
     fileUploaderProps.cancel();
     fileFetcherProps.cancel();
     setImageMetadata(null);
-    setImageContent('');
-    setRawContent('');
+    setImageContent("");
+    setRawContent("");
     setPreviewScale(null);
-  }
+  };
 
   useEffect(() => {
     // Grab metadata and content from method of file upload
@@ -256,8 +261,8 @@ function SVGToolCore({
       onError(null);
     } else {
       setImageMetadata(null);
-      setImageContent('');
-      setRawContent('');
+      setImageContent("");
+      setRawContent("");
     }
   }, [
     fileUploaderProps.imageMetadata,
@@ -290,7 +295,7 @@ function SVGToolCore({
 
   if (!imageMetadata || !imageContent)
     return (
-      <div className='flex flex-col items-center gap-4'>
+      <div className="flex flex-col items-center gap-4">
         <UploadBox
           title="Make SVGs into PNGs. Also makes them bigger. (100% free btw.)"
           subtitle="Allows pasting images from clipboard"
@@ -314,7 +319,10 @@ function SVGToolCore({
   return (
     <div className="mx-auto flex max-w-2xl flex-col items-center justify-center gap-6 p-6">
       {/* Preview Section */}
-      <div ref={imageContainerRef} className="w-full flex flex-col items-center gap-4 rounded-xl">
+      <div
+        ref={imageContainerRef}
+        className="flex w-full flex-col items-center gap-4 rounded-xl"
+      >
         <PreviewScale previewScale={previewScale} />
         <SVGRenderer
           backgroundColor={previewBackgroundColor}
@@ -323,7 +331,7 @@ function SVGToolCore({
           imageMetadata={imageMetadata}
           setPreviewScale={setPreviewScale}
         />
-        <p className="text-lg font-medium text-white/80 break-all">
+        <p className="break-all text-lg font-medium text-white/80">
           {imageMetadata.name}
         </p>
       </div>
@@ -331,17 +339,19 @@ function SVGToolCore({
       {/* Size Information */}
       <div className="flex gap-6 text-base">
         <div className="flex flex-col items-center rounded-lg bg-white/5 p-3">
-          <span className="text-sm text-white/60 text-center whitespace-nowrap">Original</span>
-          <span className="font-medium text-white text-center">
+          <span className="whitespace-nowrap text-center text-sm text-white/60">
+            Original
+          </span>
+          <span className="text-center font-medium text-white">
             {imageMetadata.width} × {imageMetadata.height}
           </span>
         </div>
 
         <div className="flex flex-col items-center rounded-lg bg-white/5 p-3">
-          <span className="text-sm text-white/60 text-center whitespace-nowrap">
+          <span className="whitespace-nowrap text-center text-sm text-white/60">
             {`Scaled (${formatNumber(effectiveScale)}×)`}
           </span>
-          <span className="font-medium text-white text-center">
+          <span className="text-center font-medium text-white">
             {Math.floor(imageMetadata.width * effectiveScale)}
             {" × "}
             {Math.floor(imageMetadata.height * effectiveScale)}
@@ -375,7 +385,7 @@ function SVGToolCore({
       <div className="flex gap-2">
         <button
           onClick={cancel}
-          className="rounded-lg bg-transparent h-10 px-4 py-2 text-sm font-medium text-white/60 hover:text-white transition-colors duration-200 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/10 focus:bg-white/10"
+          className="h-10 rounded-lg bg-transparent px-4 py-2 text-sm font-medium text-white/60 transition-colors duration-200 hover:bg-white/10 hover:text-white focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/10"
         >
           Cancel
         </button>
@@ -391,7 +401,10 @@ function SVGToolCore({
 
 export function SVGTool({ title }: { title: string }) {
   const [error, setError] = useState<string | null>(null);
-  const fileUploaderProps = useFileUploader({ accept: [".svg", "image/svg+xml"], onError: setError });
+  const fileUploaderProps = useFileUploader({
+    accept: [".svg", "image/svg+xml"],
+    onError: setError,
+  });
   const fileFetcherProps = useFileFetcher({ onError: setError });
 
   return (

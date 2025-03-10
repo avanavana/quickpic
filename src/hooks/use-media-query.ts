@@ -10,4 +10,4 @@ export function useMediaQuery(query: string) {
   const getSnapshot = () => window.matchMedia(query).matches;
 
   return useSyncExternalStore(subscribe, getSnapshot);
-};
+}

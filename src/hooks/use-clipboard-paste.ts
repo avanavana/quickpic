@@ -22,7 +22,7 @@ export function useClipboardPaste({
 
       for (const item of Array.from(items)) {
         if (item.kind === "string") break;
-        
+
         if (item.type.startsWith("image/")) {
           const file = item.getAsFile();
           if (!file) continue;
@@ -34,7 +34,8 @@ export function useClipboardPaste({
               file.name.toLowerCase().endsWith(type.replace("*", "")),
           );
 
-          const acceptedFileTypesString = generateFileTypesString(acceptedFileTypes);
+          const acceptedFileTypesString =
+            generateFileTypesString(acceptedFileTypes);
 
           event.preventDefault();
 
@@ -42,13 +43,25 @@ export function useClipboardPaste({
             onPaste(file);
             break;
           } else {
-            if (onError) onError(`Pasted image has invalid type. Valid types are: ${acceptedFileTypesString}.`);
-            else alert(`Pasted image has invalid type. Valid types are: ${acceptedFileTypesString}.`);
+            if (onError)
+              onError(
+                `Pasted image has invalid type. Valid types are: ${acceptedFileTypesString}.`,
+              );
+            else
+              alert(
+                `Pasted image has invalid type. Valid types are: ${acceptedFileTypesString}.`,
+              );
             break;
           }
         } else {
-          if (onError) onError(`Pasted file is not an image. Please upload a valid image file.`);
-          else alert(`Pasted file is not an image. Please upload a valid image file.`);
+          if (onError)
+            onError(
+              `Pasted file is not an image. Please upload a valid image file.`,
+            );
+          else
+            alert(
+              `Pasted file is not an image. Please upload a valid image file.`,
+            );
           break;
         }
       }

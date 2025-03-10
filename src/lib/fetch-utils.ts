@@ -59,7 +59,7 @@ const REGEX_URL = new RegExp(
     "(\\/[-a-z\\d%_.~+=]*)*" + // path string (at least one "/" will be in a valid resource)
     "(\\?[^#]*)?" + // query string (optional)
     "(\\#[-a-z\\d_]*)?$", // URL fragment (optional)
-  "i"
+  "i",
 );
 
 export function validateUrl(input: string) {
@@ -68,9 +68,13 @@ export function validateUrl(input: string) {
   if (!trimmedInput || !REGEX_URL.test(trimmedInput)) return null;
 
   try {
-    const url = new URL(trimmedInput.startsWith('http') ? trimmedInput : `https://${trimmedInput}`);
+    const url = new URL(
+      trimmedInput.startsWith("http")
+        ? trimmedInput
+        : `https://${trimmedInput}`,
+    );
     return url.href;
   } catch {
     return null;
   }
-} 
+}

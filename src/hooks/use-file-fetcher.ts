@@ -23,26 +23,30 @@ export type FileFetcherResult = {
   cancel: () => void;
 };
 
-type FileFetcherFormState = Pick<FileFetcherResult, "error">
+type FileFetcherFormState = Pick<FileFetcherResult, "error">;
 
 type FileFetcherOptions = {
   onError?: (error: string) => void;
-}
+};
 
 export function useFileFetcher({ onError }: FileFetcherOptions = {}) {
   const { imageContent, rawContent, imageMetadata, processFile, cancel } =
     useProcessFile({ onError });
 
-  const [state, handleFetchFile, pending] = useActionState<FileFetcherFormState, FormData>(
+  const [state, handleFetchFile, pending] = useActionState<
+    FileFetcherFormState,
+    FormData
+  >(
     async (_, formData: FormData): Promise<FileFetcherFormState> => {
       const input = formData.get("url") as string;
       const accept = formData.get("accept") as string | null;
-      
+
       if (!input) return { error: "URL is required." };
       if (!accept) return { error: "Image has invalid or missing MIME type." };
 
       const validUrl = validateUrl(input);
-      if (!validUrl) return { error: "Invalid URL. Please check and try again." };
+      if (!validUrl)
+        return { error: "Invalid URL. Please check and try again." };
 
       try {
         const response = await fetch(validUrl);
@@ -50,9 +54,14 @@ export function useFileFetcher({ onError }: FileFetcherOptions = {}) {
         if (!response.ok) {
           switch (response.status) {
             case 400:
-              return { error: "Invalid request. Please check the URL and try again." };
+              return {
+                error: "Invalid request. Please check the URL and try again.",
+              };
             case 403:
-              return { error: "Forbidden—you don't have permission to access this resource." };
+              return {
+                error:
+                  "Forbidden—you don't have permission to access this resource.",
+              };
             case 404:
               return { error: "Image not found. Please check the URL." };
             case 500:
@@ -61,19 +70,24 @@ export function useFileFetcher({ onError }: FileFetcherOptions = {}) {
               return { error: "Service unavailable. Please try again later." };
             default:
               let errorMessage = response.status + "";
-              if (HTTP_ERROR_CODES.has(response.status)) errorMessage += ` ${HTTP_ERROR_CODES.get(response.status)}`;
-              return { error: `Failed to retrieve image (Error: ${errorMessage}).` };
+              if (HTTP_ERROR_CODES.has(response.status))
+                errorMessage += ` ${HTTP_ERROR_CODES.get(response.status)}`;
+              return {
+                error: `Failed to retrieve image (Error: ${errorMessage}).`,
+              };
           }
         }
 
         const fileType = response.headers.get("Content-Type") ?? "";
 
         if (!fileType.startsWith("image/")) {
-          return { error: `Requested file is not an image. Please upload a valid image file.` };
+          return {
+            error: `Requested file is not an image. Please upload a valid image file.`,
+          };
         }
-        
+
         let fileExt = "",
-            fileContent: string | ArrayBuffer;
+          fileContent: string | ArrayBuffer;
 
         if (fileType.startsWith("image/")) {
           fileExt = fileType.split("/").pop() ?? "";
@@ -82,13 +96,19 @@ export function useFileFetcher({ onError }: FileFetcherOptions = {}) {
         }
 
         const isSvg = fileType === "image/svg+xml";
-        const isValidType = accept === "image/*" || fileType.startsWith(accept) || (accept.includes(".svg") && isSvg);
+        const isValidType =
+          accept === "image/*" ||
+          fileType.startsWith(accept) ||
+          (accept.includes(".svg") && isSvg);
 
         if (!isValidType) {
-          return { error: `Requested image has invalid type. Valid types are: ${accept}.` };
+          return {
+            error: `Requested image has invalid type. Valid types are: ${accept}.`,
+          };
         }
 
-        const fileName = new URL(validUrl).pathname.split("/").pop()?.split(".")[0] ?? "image";
+        const fileName =
+          new URL(validUrl).pathname.split("/").pop()?.split(".")[0] ?? "image";
         const fileNameWithExt = `${fileName}.${fileExt}`;
 
         if (isSvg) {
@@ -97,27 +117,43 @@ export function useFileFetcher({ onError }: FileFetcherOptions = {}) {
           fileContent = await response.arrayBuffer();
         }
 
-        const tempFile = new File([fileContent], fileNameWithExt, { type: fileType });
+        const tempFile = new File([fileContent], fileNameWithExt, {
+          type: fileType,
+        });
 
         await processFile(tempFile);
         return { error: null }; // Success, reset error state
       } catch (err) {
-        if (err instanceof TypeError && err.message.includes("Failed to fetch")) {
-          return { error: "CORS Error: The requested resource does not allow cross-origin requests." };
+        if (
+          err instanceof TypeError &&
+          err.message.includes("Failed to fetch")
+        ) {
+          return {
+            error:
+              "CORS Error: The requested resource does not allow cross-origin requests.",
+          };
         } else if (err instanceof Error) {
           if (err.message.includes("ERR_CERT_AUTHORITY_INVALID")) {
-            return { error: "Invalid certificate. Try using http:// instead of https://." };
-          } else if (err.message.includes("ERR_FAILED") && err.message.includes("301")) {
+            return {
+              error:
+                "Invalid certificate. Try using http:// instead of https://.",
+            };
+          } else if (
+            err.message.includes("ERR_FAILED") &&
+            err.message.includes("301")
+          ) {
             return { error: "The requested image has been moved permanently." };
           } else if (err.message.includes("Failed to fetch")) {
-            return { error: "Network error—the resource may be down or unreachable." };
+            return {
+              error: "Network error—the resource may be down or unreachable.",
+            };
           }
         }
 
         return { error: "Unknown error. Please try again." };
       }
     },
-    { error: null } // Initial state, no form error
+    { error: null }, // Initial state, no form error
   );
 
   useEffect(() => {
@@ -134,6 +170,6 @@ export function useFileFetcher({ onError }: FileFetcherOptions = {}) {
     handleFetchFile,
     pending,
     error: state.error,
-    cancel
+    cancel,
   };
 }

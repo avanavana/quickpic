@@ -1,5 +1,9 @@
 import { useState } from "react";
-import { parseSvgFile, parseImageFile, readFileContent } from "@/lib/file-utils";
+import {
+  parseSvgFile,
+  parseImageFile,
+  readFileContent,
+} from "@/lib/file-utils";
 
 export type ProcessFileResult = {
   /** The processed image content as a data URL (for regular images) or object URL (for SVGs) */
@@ -19,7 +23,7 @@ export type ProcessFileResult = {
 
 type ProcessFileOptions = {
   onError?: (error: string) => void;
-}
+};
 
 /**
  * A hook for centralizing file (e.g. svg and raster images) processing logic
@@ -34,7 +38,9 @@ type ProcessFileOptions = {
  * - processFile: Function to process files and set the above three values
  * - cancel: Function to reset the upload state
  */
-export function useProcessFile({ onError }: ProcessFileOptions = {}): ProcessFileResult {
+export function useProcessFile({
+  onError,
+}: ProcessFileOptions = {}): ProcessFileResult {
   const [imageContent, setImageContent] = useState<string>("");
   const [rawContent, setRawContent] = useState<string>("");
   const [imageMetadata, setImageMetadata] = useState<{
@@ -51,17 +57,17 @@ export function useProcessFile({ onError }: ProcessFileOptions = {}): ProcessFil
       if (file.type === "image/svg+xml") {
         const { content: parsedSvgContent, metadata } = parseSvgFile(
           content,
-          file.name
+          file.name,
         );
-        
+
         setImageContent(parsedSvgContent);
         setImageMetadata(metadata);
       } else {
         const { content: parsedImageContent, metadata } = await parseImageFile(
           content,
-          file.name
+          file.name,
         );
-        
+
         setImageContent(parsedImageContent);
         setImageMetadata(metadata);
       }

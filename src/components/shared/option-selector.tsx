@@ -29,7 +29,8 @@ export function OptionSelector<T extends string | number>({
   const highlightRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!selectedRef.current || !highlightRef.current || !containerRef.current) return;
+    if (!selectedRef.current || !highlightRef.current || !containerRef.current)
+      return;
 
     // prevent layout thrashing
     requestAnimationFrame(() => {
@@ -44,16 +45,20 @@ export function OptionSelector<T extends string | number>({
       highlight.style.width = `${selectedRect.width}px`;
     });
 
-  // though isXsScreen is not a real dependency, the selected scale option must
-  // be re-rerendered when it changes, because otherwise the highlight will be
-  // missing/not calculated when the user resizes the window and the scale selector
-  // switches between its two different display modes
+    // though isXsScreen is not a real dependency, the selected scale option must
+    // be re-rerendered when it changes, because otherwise the highlight will be
+    // missing/not calculated when the user resizes the window and the scale selector
+    // switches between its two different display modes
   }, [selected, isXsScreen]);
 
   return (
-    <div className={`${isXsScreen ? "w-full" : ""} flex flex-col items-center gap-2`}>
+    <div
+      className={`${isXsScreen ? "w-full" : ""} flex flex-col items-center gap-2`}
+    >
       <span className="text-sm text-white/60">{title}</span>
-      <div className={`flex ${isXsScreen ? "flex-row w-full" : "flex-col"} items-center justify-center gap-2`}>
+      <div
+        className={`flex ${isXsScreen ? "w-full flex-row" : "flex-col"} items-center justify-center gap-2`}
+      >
         {isXsScreen ? (
           <Select
             options={options}
@@ -76,7 +81,7 @@ export function OptionSelector<T extends string | number>({
                 key={option}
                 ref={option === selected ? selectedRef : null}
                 onClick={() => onChange(option)}
-                className={`option relative rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-none ${
+                className={`option focus:ring-none relative rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none ${
                   option === selected
                     ? "text-white"
                     : "text-white/60 hover:text-white focus:bg-white/10"

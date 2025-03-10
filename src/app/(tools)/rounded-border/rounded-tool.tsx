@@ -105,7 +105,9 @@ const ImageRenderer = ({
   radius,
   setPreviewScale,
 }: ImageRendererProps) => {
-  const [effectiveBorderRadius, setEffectiveBorderRadius] = useState<number | null>(radius);
+  const [effectiveBorderRadius, setEffectiveBorderRadius] = useState<
+    number | null
+  >(radius);
   const [internalScale, setInternalScale] = useState<number>(1);
 
   useEffect(() => {
@@ -114,22 +116,22 @@ const ImageRenderer = ({
 
     const updatePreviewScaleFactor = () => {
       const imageContainerWidth = container.clientWidth;
-      
+
       const previewScaleFactor = Math.min(
         imageContainerWidth / imageMetadata.width,
         imageContainerWidth / imageMetadata.height,
-        1 // Prevent upscaling
-      )
+        1, // Prevent upscaling
+      );
 
       setEffectiveBorderRadius((radius ?? 1) * previewScaleFactor);
       setPreviewScale(previewScaleFactor < 1 ? previewScaleFactor : null);
       setInternalScale(previewScaleFactor);
-    }
+    };
 
     updatePreviewScaleFactor();
     const resizeObserver = new ResizeObserver(updatePreviewScaleFactor);
     resizeObserver.observe(container);
-    
+
     return () => resizeObserver.disconnect();
   }, [imageContent, imageMetadata, radius, imageContainer, setPreviewScale]);
 
@@ -182,7 +184,7 @@ function SaveAsPngButton({
           plausible("convert-image-to-png");
           void convertToPng();
         }}
-        className="flex items-center gap-2 rounded-lg bg-blue-600 h-10 px-4 py-2 text-sm font-semibold text-white text-left whitespace-nowrap shadow-md transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
+        className="flex h-10 items-center gap-2 whitespace-nowrap rounded-lg bg-blue-600 px-4 py-2 text-left text-sm font-semibold text-white shadow-md transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
       >
         <DownloadIcon strokeWidth={2.5} />
         Save as PNG
@@ -203,9 +205,12 @@ function RoundedToolCore({
   fileFetcherProps,
   error,
   onError,
- }: RoundedToolCoreProps) {
+}: RoundedToolCoreProps) {
   const router = useRouter();
-  const [radius, setRadius] = useLocalStorage<Radius | null>("roundedTool_radius", 2);
+  const [radius, setRadius] = useLocalStorage<Radius | null>(
+    "roundedTool_radius",
+    2,
+  );
   const [isCustomRadius, setIsCustomRadius] = useState(false);
   const [background, setBackground] = useLocalStorage<BackgroundOption>(
     "roundedTool_background",
@@ -213,19 +218,23 @@ function RoundedToolCore({
   );
 
   const imageContainerRef = useRef<HTMLDivElement>(null);
-  const [imageMetadata, setImageMetadata] = useState<ImageMetadata>(fileUploaderProps.imageMetadata);
-  const [imageContent, setImageContent] = useState<string>(fileUploaderProps.imageContent);
+  const [imageMetadata, setImageMetadata] = useState<ImageMetadata>(
+    fileUploaderProps.imageMetadata,
+  );
+  const [imageContent, setImageContent] = useState<string>(
+    fileUploaderProps.imageContent,
+  );
   const [previewScale, setPreviewScale] = useState<number | null>(null);
 
   const SubtitleIcon = <ClipboardPasteIcon className="-ml-1" />;
-  
+
   const cancel = () => {
     fileUploaderProps.cancel();
     fileFetcherProps.cancel();
     setImageMetadata(null);
-    setImageContent('');
+    setImageContent("");
     setPreviewScale(null);
-  }
+  };
 
   const handleRadiusChange = (value: number | "custom") => {
     if (value === "custom") {
@@ -255,7 +264,7 @@ function RoundedToolCore({
       onError(null);
     } else {
       setImageMetadata(null);
-      setImageContent('');
+      setImageContent("");
     }
   }, [
     fileUploaderProps.imageMetadata,
@@ -286,7 +295,7 @@ function RoundedToolCore({
 
   if (!imageMetadata) {
     return (
-      <div className='flex flex-col items-center gap-4'>
+      <div className="flex flex-col items-center gap-4">
         <UploadBox
           title="Add rounded borders to your images. Quick and easy."
           subtitle="Allows pasting images from clipboard"
@@ -311,7 +320,10 @@ function RoundedToolCore({
   return (
     <div className="mx-auto flex max-w-sm flex-col items-center justify-center gap-6 p-8">
       {/* Preview Section */}
-      <div ref={imageContainerRef} className="flex w-full flex-col items-center gap-4 rounded-xl">
+      <div
+        ref={imageContainerRef}
+        className="flex w-full flex-col items-center gap-4 rounded-xl"
+      >
         <PreviewScale previewScale={previewScale} />
         <ImageRenderer
           imageContent={imageContent}
@@ -321,15 +333,17 @@ function RoundedToolCore({
           setPreviewScale={setPreviewScale}
           imageContainer={imageContainerRef as React.RefObject<HTMLDivElement>}
         />
-        <p className="text-lg font-medium text-white/80 break-all">
+        <p className="break-all text-lg font-medium text-white/80">
           {imageMetadata.name}
         </p>
       </div>
 
       {/* Size Information */}
       <div className="flex flex-col items-center rounded-lg bg-white/5 p-3">
-        <span className="text-sm text-white/60 text-center whitespace-nowrap">Actual Size</span>
-        <span className="font-medium text-white text-center">
+        <span className="whitespace-nowrap text-center text-sm text-white/60">
+          Actual Size
+        </span>
+        <span className="text-center font-medium text-white">
           {imageMetadata.width} × {imageMetadata.height}
         </span>
       </div>
@@ -358,7 +372,7 @@ function RoundedToolCore({
       <div className="flex gap-2">
         <button
           onClick={cancel}
-          className="rounded-lg bg-transparent h-10 px-4 py-2 text-sm font-medium text-white/90 transition-colors duration-200 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/10 focus:bg-white/10"
+          className="h-10 rounded-lg bg-transparent px-4 py-2 text-sm font-medium text-white/90 transition-colors duration-200 hover:bg-white/10 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/10"
         >
           Cancel
         </button>

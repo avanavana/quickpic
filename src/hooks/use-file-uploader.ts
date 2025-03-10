@@ -25,7 +25,7 @@ export type FileUploaderResult = {
 type FileUploaderOptions = {
   accept?: FileTypeString | FileTypeString[];
   onError?: (error: string) => void;
-}
+};
 
 /**
  * A hook for handling file uploads, particularly images and SVGs
@@ -36,17 +36,22 @@ type FileUploaderOptions = {
  * - handleFileUpload: Function to handle file input change events
  * - cancel: Function to reset the upload state
  */
-export const useFileUploader = ({ accept, onError }: FileUploaderOptions = {}): FileUploaderResult => {
+export const useFileUploader = ({
+  accept,
+  onError,
+}: FileUploaderOptions = {}): FileUploaderResult => {
   const { imageContent, rawContent, imageMetadata, processFile, cancel } =
     useProcessFile({ onError });
 
   const acceptedFileTypes: FileTypeString[] = accept
-    ? (Array.isArray(accept) ? accept : [accept])
-    : ["image/*", ".jpg", ".jpeg", ".png", ".webp", ".svg"]; 
+    ? Array.isArray(accept)
+      ? accept
+      : [accept]
+    : ["image/*", ".jpg", ".jpeg", ".png", ".webp", ".svg"];
 
   const handleFileUpload = (file: File) => {
     void processFile(file);
-  }
+  };
 
   const handleFileUploadEvent = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -57,13 +62,13 @@ export const useFileUploader = ({ accept, onError }: FileUploaderOptions = {}): 
 
   const handleFilePaste = (file: File) => {
     void processFile(file);
-  }
+  };
 
   useClipboardPaste({
     acceptedFileTypes,
     onError,
     onPaste: handleFilePaste,
-  }); 
+  });
 
   return {
     imageContent,

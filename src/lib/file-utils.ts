@@ -3,13 +3,25 @@ import type { ChangeEvent } from "react";
 import type { FileUploaderResult } from "@/hooks/use-file-uploader";
 import type { FileFetcherResult } from "@/hooks/use-file-fetcher";
 
-export type ImageMetadata = FileUploaderResult["imageMetadata"] | FileFetcherResult["imageMetadata"];
+export type ImageMetadata =
+  | FileUploaderResult["imageMetadata"]
+  | FileFetcherResult["imageMetadata"];
 
 export type FileType = "Image (any type)" | "JPG" | "PNG" | "WEBP" | "SVG";
-export type FileTypeString = "image/*" | "image/jpeg" | ".jpg" | ".jpeg" | "image/png" | ".png" | "image/webp" | ".webp" | "image/svg+xml" | ".svg";
+export type FileTypeString =
+  | "image/*"
+  | "image/jpeg"
+  | ".jpg"
+  | ".jpeg"
+  | "image/png"
+  | ".png"
+  | "image/webp"
+  | ".webp"
+  | "image/svg+xml"
+  | ".svg";
 
 // Mapping of file extensions and MIME types to human-readable file types
-export const allFileTypes: { type: FileTypeString, group: FileType }[] = [
+export const allFileTypes: { type: FileTypeString; group: FileType }[] = [
   { type: "image/*", group: "Image (any type)" },
   { type: ".jpeg", group: "JPG" },
   { type: ".jpg", group: "JPG" },
@@ -25,7 +37,7 @@ export const allFileTypes: { type: FileTypeString, group: FileType }[] = [
 // Create a no-op function that satisfies the linter
 const noop = () => {
   /* intentionally empty */
-}
+};
 
 export function createFileChangeEvent(
   file: File,
@@ -60,7 +72,7 @@ export function createFileChangeEvent(
 
 export function parseImageFile(
   content: string,
-  fileName: string
+  fileName: string,
 ): Promise<{
   content: string;
   metadata: { width: number; height: number; name: string };
@@ -81,7 +93,7 @@ export function parseImageFile(
   });
 }
 
-export function parseSvgFile(content: string, fileName: string) { 
+export function parseSvgFile(content: string, fileName: string) {
   const parser = new DOMParser();
   const svgDoc = parser.parseFromString(content, "image/svg+xml");
   const svgElement = svgDoc.documentElement;
@@ -90,7 +102,7 @@ export function parseSvgFile(content: string, fileName: string) {
   let height = parseInt(svgElement.getAttribute("height") ?? "");
 
   // If width and height are not expliclitly defined, try to extract them from the viewBox attribute
-  if ((!width || !height) && viewBox) { 
+  if ((!width || !height) && viewBox) {
     const viewBoxValues = viewBox.split(" ").map(parseFloat);
     if (viewBoxValues.length === 4) {
       width = viewBoxValues[2]!;
@@ -98,7 +110,8 @@ export function parseSvgFile(content: string, fileName: string) {
     }
   }
 
-  if (isNaN(width) || isNaN(height)) throw new TypeError("Unable to parse SVG. File may be corrupted.");
+  if (isNaN(width) || isNaN(height))
+    throw new TypeError("Unable to parse SVG. File may be corrupted.");
 
   // Convert SVG content to a data URL
   const svgBlob = new Blob([content], { type: "image/svg+xml" });
@@ -114,7 +127,7 @@ export function parseSvgFile(content: string, fileName: string) {
   };
 }
 
-export function readFileContent(file: File): Promise<string> { 
+export function readFileContent(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
@@ -140,9 +153,11 @@ export function readFileContent(file: File): Promise<string> {
  */
 export function generateFileTypesString(accepted: FileTypeString[]) {
   return [
-    ...new Set(accepted
-      .map((acceptedType) => allFileTypes
-        .find(({ type }) => type === acceptedType)!.group
-      ))
+    ...new Set(
+      accepted.map(
+        (acceptedType) =>
+          allFileTypes.find(({ type }) => type === acceptedType)!.group,
+      ),
+    ),
   ].join(", ");
 }

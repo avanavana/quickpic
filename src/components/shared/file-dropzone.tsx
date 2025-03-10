@@ -25,7 +25,7 @@ export function FileDropzone({
   const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-  }
+  };
 
   const handleDragIn = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -35,7 +35,7 @@ export function FileDropzone({
     if (e.dataTransfer?.items && e.dataTransfer.items.length > 0) {
       setIsDragging(true);
     }
-  }
+  };
 
   const handleDragOut = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -45,7 +45,7 @@ export function FileDropzone({
     if (dragCounter.current === 0) {
       setIsDragging(false);
     }
-  }
+  };
 
   const handleDrop = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
@@ -67,12 +67,20 @@ export function FileDropzone({
         if (
           !acceptedFileTypes.includes(droppedFile.type) &&
           !acceptedFileTypes.some((type) =>
-            droppedFile.name.toLowerCase().endsWith(type.replace("*", ""))
+            droppedFile.name.toLowerCase().endsWith(type.replace("*", "")),
           )
         ) {
-          const acceptedFileTypesString = generateFileTypesString(acceptedFileTypes as FileTypeString[]);
-          if (onError) onError(`Uploaded file has invalid type. Valid types are: ${acceptedFileTypesString}.`); 
-          else alert(`Uploaded file has invalid type. Valid types are: ${acceptedFileTypesString}.`);
+          const acceptedFileTypesString = generateFileTypesString(
+            acceptedFileTypes as FileTypeString[],
+          );
+          if (onError)
+            onError(
+              `Uploaded file has invalid type. Valid types are: ${acceptedFileTypesString}.`,
+            );
+          else
+            alert(
+              `Uploaded file has invalid type. Valid types are: ${acceptedFileTypesString}.`,
+            );
           return;
         }
 
@@ -92,9 +100,9 @@ export function FileDropzone({
       className="size-full"
     >
       {isDragging && (
-        <div className="fixed inset-0 z-50 p-8 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-8">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-md" />
-          <div className="animate-in fade-in zoom-in relative flex flex-col size-full transform items-center justify-center rounded-xl border-2 border-dashed border-white/30 transition-all duration-200 ease-out">
+          <div className="animate-in fade-in zoom-in relative flex size-full transform flex-col items-center justify-center rounded-xl border-2 border-dashed border-white/30 transition-all duration-200 ease-out">
             <UploadIcon className="size-12 text-gray-500" />
             <p className="text-2xl font-semibold text-gray-500">{dropText}</p>
           </div>

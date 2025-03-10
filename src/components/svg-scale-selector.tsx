@@ -4,13 +4,15 @@ import { Select } from "@/components/shared/select";
 
 import { useMediaQuery } from "@/hooks/use-media-query";
 
-type CustomValueChangeEventContext = {
-  e: React.KeyboardEvent<HTMLInputElement>;
-  context: 'keyboard';
-} | {
-  e: React.MouseEvent<HTMLButtonElement, MouseEvent>;
-  context: 'button-up' | 'button-down';
-}
+type CustomValueChangeEventContext =
+  | {
+      e: React.KeyboardEvent<HTMLInputElement>;
+      context: "keyboard";
+    }
+  | {
+      e: React.MouseEvent<HTMLButtonElement, MouseEvent>;
+      context: "button-up" | "button-down";
+    };
 
 interface SVGScaleSelectorProps {
   customValue?: number | null;
@@ -45,24 +47,28 @@ export function SVGScaleSelector({
     if (/^(\d+\.?\d*|\.\d*)?$/.test(rawInput)) {
       onCustomValueChange?.(rawInput === "" ? null : parseFloat(rawInput));
     }
-  }
+  };
 
   // but handle most of the validation on blur, which allows the user to clear the input
   // completely, so they can type anything—including values that begin with "0", like "0.25"
   const handleInputBlur = () => {
     // Empty input and invalid (NaN) input should cause the input to be reset to 1
-    if (customValue === null || customValue === undefined || isNaN(customValue)) {
+    if (
+      customValue === null ||
+      customValue === undefined ||
+      isNaN(customValue)
+    ) {
       onCustomValueChange?.(1);
       return;
     }
-    
+
     // Remove leading and trailing whitespace
     let normalizedValue = customValue.toString().trim();
 
     // Decimal values should always have a single leading zero
     if (normalizedValue.startsWith("."))
       normalizedValue = "0" + normalizedValue;
-    
+
     // Decimal values should always have only one leading zero
     if (/^0+\d+$/.test(normalizedValue))
       normalizedValue = String(parseFloat(normalizedValue));
@@ -75,14 +81,21 @@ export function SVGScaleSelector({
     if (normalizedValue === "0") normalizedValue = "1";
 
     // Parse the normalized value as a number, clamp it to the range 0 < value <= 64, and set state
-    const clampedValue = Math.min(64, Math.max(Number.MIN_VALUE, parseFloat(normalizedValue)));
+    const clampedValue = Math.min(
+      64,
+      Math.max(Number.MIN_VALUE, parseFloat(normalizedValue)),
+    );
     onCustomValueChange?.(clampedValue);
-  }
+  };
 
   // a generalized handler for custom value changes which can operate in different contexts—keyboard/keydown
   // on the custom value input itself, or pointer/click on the custom value input's increment/decrement buttons
-  const handleCustomValueStep = ({ e, context }: CustomValueChangeEventContext) => {
-    if (context === 'keyboard' && e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+  const handleCustomValueStep = ({
+    e,
+    context,
+  }: CustomValueChangeEventContext) => {
+    if (context === "keyboard" && e.key !== "ArrowUp" && e.key !== "ArrowDown")
+      return;
 
     e.preventDefault();
     const currentValue = customValue ?? 0.1;
@@ -90,9 +103,9 @@ export function SVGScaleSelector({
 
     if (e.shiftKey) step = 10;
     if (e.altKey) step = 0.1;
-    
+
     const newValue =
-      (context === 'keyboard' && e.key === "ArrowUp") || (context === 'button-up')
+      (context === "keyboard" && e.key === "ArrowUp") || context === "button-up"
         ? (currentValue || 0) + step
         : (currentValue || 0) - step;
 
@@ -102,10 +115,11 @@ export function SVGScaleSelector({
     );
 
     onCustomValueChange?.(clampedValue);
-  }
+  };
 
   useEffect(() => {
-    if (!selectedRef.current || !highlightRef.current || !containerRef.current) return;
+    if (!selectedRef.current || !highlightRef.current || !containerRef.current)
+      return;
 
     // prevent layout thrashing
     requestAnimationFrame(() => {
@@ -120,24 +134,30 @@ export function SVGScaleSelector({
       highlight.style.width = `${selectedRect.width}px`;
     });
 
-  // though isXsScreen is not a real dependency, the selected scale option must
-  // be re-rerendered when it changes, because otherwise the highlight will be
-  // missing/not calculated when the user resizes the window and the scale selector
-  // switches between its two different display modes
+    // though isXsScreen is not a real dependency, the selected scale option must
+    // be re-rerendered when it changes, because otherwise the highlight will be
+    // missing/not calculated when the user resizes the window and the scale selector
+    // switches between its two different display modes
   }, [selected, isXsScreen]);
 
   return (
-    <div className={`${isXsScreen ? "w-full" : ""} flex flex-col items-center gap-2`}> 
+    <div
+      className={`${isXsScreen ? "w-full" : ""} flex flex-col items-center gap-2`}
+    >
       <span className="text-sm text-white/60">{title}</span>
-      <div className={`flex ${isXsScreen ? "flex-row w-full" : "flex-col"} items-center justify-center gap-2`}>
+      <div
+        className={`flex ${isXsScreen ? "w-full flex-row" : "flex-col"} items-center justify-center gap-2`}
+      >
         {isXsScreen ? (
           <Select
             placeholder="Select scale…"
-            options={[ ...options, "custom" as const ]}
+            options={[...options, "custom" as const]}
             selected={selected}
             onChange={onChange}
-            formatOption={(option: number | "custom") => option === "custom" ? "Custom" : `${option}×`}
-            className="flex-1 basis-1/2 w-full min-w-0"
+            formatOption={(option: number | "custom") =>
+              option === "custom" ? "Custom" : `${option}×`
+            }
+            className="w-full min-w-0 flex-1 basis-1/2"
           />
         ) : (
           <div
@@ -155,7 +175,7 @@ export function SVGScaleSelector({
                 onClick={() =>
                   onChange(typeof option === "number" ? option : "custom")
                 }
-                className={`option relative rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-none ${
+                className={`option focus:ring-none relative rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none ${
                   option === selected
                     ? "text-white"
                     : "text-white/60 hover:text-white focus:bg-white/10"
@@ -167,7 +187,9 @@ export function SVGScaleSelector({
           </div>
         )}
         {selected === "custom" && (
-          <div className={`${isXsScreen ? "flex-1 basis-1/2 w-full min-w-0" : "w-36"} group relative flex items-center`}>
+          <div
+            className={`${isXsScreen ? "w-full min-w-0 flex-1 basis-1/2" : "w-36"} group relative flex items-center`}
+          >
             <input
               ref={customValueInputRef}
               type="number"
@@ -177,38 +199,74 @@ export function SVGScaleSelector({
               value={customValue === null ? "" : customValue}
               onChange={handleInputChange}
               onBlur={handleInputBlur}
-              onKeyDown={(e) => handleCustomValueStep({ e, context: 'keyboard' })}
-              className="w-full h-10 rounded-lg px-3 pr-10 py-2 text-sm font-medium bg-white/5 text-white/60 hover:text-white group-hover:text-white group-focus-within:text-white placeholder:text-gray-500 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-none group-focus-within:ring-2 group-focus-within:ring-white/30 disabled:cursor-not-allowed disabled:opacity-50 [&::-webkit-inner-spin-button]:[-webkit-appearance:none] [&::-webkit-outer-spin-button]:[-webkit-appearance:none] [&::-webkit-inner-spin-button]:opacity-0 [&::-webkit-outer-spin-button]:opacity-0"
+              onKeyDown={(e) =>
+                handleCustomValueStep({ e, context: "keyboard" })
+              }
+              className="focus-visible:ring-offset-none h-10 w-full rounded-lg bg-white/5 px-3 py-2 pr-10 text-sm font-medium text-white/60 transition-colors duration-200 placeholder:text-gray-500 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 disabled:cursor-not-allowed disabled:opacity-50 group-focus-within:text-white group-focus-within:ring-2 group-focus-within:ring-white/30 group-hover:text-white [&::-webkit-inner-spin-button]:opacity-0 [&::-webkit-inner-spin-button]:[-webkit-appearance:none] [&::-webkit-outer-spin-button]:opacity-0 [&::-webkit-outer-spin-button]:[-webkit-appearance:none]"
               placeholder="Enter scale"
             />
-            <span className="absolute right-8 font-medium text-sm text-gray-500">×</span>
+            <span className="absolute right-8 text-sm font-medium text-gray-500">
+              ×
+            </span>
             <button
               ref={customValueIncrementRef}
-              className="absolute right-2 top-2 flex items-center justify-center w-4 h-3 cursor-pointer transition-colors duration-200 text-gray-500 hover:text-white focus:rounded-sm focus:outline-none focus:ring-none focus:text-white focus:bg-white/10"
-              onClick={(e) => handleCustomValueStep({ e, context: 'button-up' })}
+              className="focus:ring-none absolute right-2 top-2 flex h-3 w-4 cursor-pointer items-center justify-center text-gray-500 transition-colors duration-200 hover:text-white focus:rounded-sm focus:bg-white/10 focus:text-white focus:outline-none"
+              onClick={(e) =>
+                handleCustomValueStep({ e, context: "button-up" })
+              }
               onMouseLeave={() => {
                 // prevent increment/decrement buttons from retaining focus after click and even after mouseleave
-                if (document.activeElement === customValueIncrementRef.current) {
+                if (
+                  document.activeElement === customValueIncrementRef.current
+                ) {
                   customValueIncrementRef.current?.blur();
                   customValueInputRef.current?.focus();
                 }
               }}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width={16}
+                height={16}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="m18 15-6-6-6 6" />
+              </svg>
             </button>
             <button
               ref={customValueDecrementRef}
-              className="absolute right-2 bottom-2 flex items-center justify-center w-4 h-3 cursor-pointer transition-colors duration-200 text-gray-500 hover:text-white focus:rounded-sm focus:outline-none focus:ring-none focus:text-white focus:bg-white/10"
-              onClick={(e) => handleCustomValueStep({ e, context: 'button-down' })}
+              className="focus:ring-none absolute bottom-2 right-2 flex h-3 w-4 cursor-pointer items-center justify-center text-gray-500 transition-colors duration-200 hover:text-white focus:rounded-sm focus:bg-white/10 focus:text-white focus:outline-none"
+              onClick={(e) =>
+                handleCustomValueStep({ e, context: "button-down" })
+              }
               onMouseLeave={() => {
                 // prevent increment/decrement buttons from retaining focus after click and even after mouseleave
-                if (document.activeElement === customValueIncrementRef.current) {
+                if (
+                  document.activeElement === customValueIncrementRef.current
+                ) {
                   customValueIncrementRef.current?.blur();
                   customValueInputRef.current?.focus();
                 }
               }}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width={16}
+                height={16}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
             </button>
           </div>
         )}
