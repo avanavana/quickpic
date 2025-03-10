@@ -11,7 +11,7 @@ import {
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col justify-between px-8 pb-4 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex grow flex-col items-center justify-center text-center">
+      <main className="mt-[60px] flex grow flex-col items-center justify-center text-center">
         <div>
           Hi. I&apos;m{" "}
           <a
