@@ -77,8 +77,11 @@ export function BorderRadiusSelector({
     if (normalizedValue.includes("."))
       normalizedValue = parseFloat(normalizedValue).toString();
 
-    // Values of 0 should be normalized to 1
+    // Values of 0 should be normalized to 1, while still allowing values arbitrarily close to 0
     if (normalizedValue === "0") normalizedValue = "1";
+
+    // Values of 1000 and above should be normalized to 999, while still allowing values arbitrarily close to 1000
+    if (+normalizedValue >= 1000) normalizedValue = "999";
 
     // Parse the normalized value as a number, clamp it to the range 0 < value < 1000, and set state
     const clampedValue = Math.min(
