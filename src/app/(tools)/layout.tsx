@@ -8,7 +8,7 @@ function BackButton() {
     <div className="fixed left-4 top-4 z-50">
       <Link
         href="/"
-        className="flex items-center gap-1 px-3 py-1 text-sm font-medium text-gray-500 transition-colors duration-200 hover:text-gray-200"
+        className="flex items-center gap-2 px-3 py-1 text-sm font-medium text-gray-500 transition-colors duration-200 hover:text-gray-200"
       >
         <ArrowLeftIcon strokeWidth={2.5} />
         Back

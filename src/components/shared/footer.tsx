@@ -1,4 +1,4 @@
-import { GitHubIcon } from "@/components/shared/icons";
+import { ArrowUpRightIcon, GitHubIcon } from "@/components/shared/icons";
 
 export function Footer() {
   return (
@@ -7,10 +7,14 @@ export function Footer() {
         href="https://github.com/t3dotgg/quickpic"
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1 px-3 py-1 text-sm font-medium hover:text-gray-200 focus:text-gray-200 transition-colors duration-200"
+        className="inline-flex items-center gap-2 px-3 py-1 text-sm font-medium hover:text-gray-200 focus:text-gray-200 transition-colors duration-200"
       >
         <GitHubIcon />
-        View on GitHub
+        {/* <RepositoryIcon strokeWidth={1.5} /> */}
+        <span className="inline-flex items-center">
+          View on GitHub
+          <ArrowUpRightIcon />
+        </span>
       </a>
     </footer>
   )

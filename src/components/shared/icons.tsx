@@ -30,6 +30,19 @@ export function ArrowLeftIcon({ className, strokeWidth }: IconProps) {
   );
 }
 
+export function ArrowUpRightIcon({ className, strokeWidth }: IconProps) {
+  return (
+    <svg
+      {...defaultProps}
+      strokeWidth={strokeWidth ?? 2}
+      className={`size-4 shrink-0 ${className}`}
+    >
+      <path d="M7 7h10v10"/>
+      <path d="M7 17 17 7"/>
+    </svg>
+  );
+}
+
 export function ClipboardPasteIcon({ className, strokeWidth }: IconProps) {
   return (
     <svg

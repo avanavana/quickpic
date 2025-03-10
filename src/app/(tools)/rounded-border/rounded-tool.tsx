@@ -358,7 +358,7 @@ function RoundedToolCore({
       <div className="flex gap-2">
         <button
           onClick={cancel}
-          className="rounded-lg bg-transparent h-10 px-4 py-2 text-sm font-medium text-white/90 transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/10 focus:bg-white/10"
+          className="rounded-lg bg-transparent h-10 px-4 py-2 text-sm font-medium text-white/90 transition-colors duration-200 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/10 focus:bg-white/10"
         >
           Cancel
         </button>
