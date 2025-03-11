@@ -28,6 +28,7 @@ interface ImageRendererProps {
   imageContainer: React.RefObject<HTMLDivElement> | null;
   imageContent: string | null;
   imageMetadata: { width: number; height: number; name: string };
+  objectFit: "contain" | "cover";
   setPreviewScale: (scale: number | null) => void;
 }
 
@@ -36,6 +37,7 @@ const ImageRenderer = ({
   imageContainer,
   imageContent,
   imageMetadata,
+  objectFit,
   setPreviewScale,
 }: ImageRendererProps) => {
   const [internalScale, setInternalScale] = useState<number>(1);
@@ -47,11 +49,18 @@ const ImageRenderer = ({
     const updatePreviewScaleFactor = () => {
       const imageContainerWidth = container.clientWidth;
 
-      const previewScaleFactor = Math.min(
-        imageContainerWidth / imageMetadata.width,
-        imageContainerWidth / imageMetadata.height,
-        1, // Prevent upscaling
-      );
+      const previewScaleFactor =
+        objectFit === "contain"
+          ? Math.min(
+              imageContainerWidth / imageMetadata.width,
+              imageContainerWidth / imageMetadata.height,
+              1, // Prevent upscaling
+            )
+          : Math.min(
+              imageContainerWidth /
+                Math.min(imageMetadata.width, imageMetadata.height),
+              1, // Prevent upscaling
+            );
 
       setPreviewScale(previewScaleFactor < 1 ? previewScaleFactor : null);
       setInternalScale(previewScaleFactor);
@@ -62,20 +71,31 @@ const ImageRenderer = ({
     resizeObserver.observe(container);
 
     return () => resizeObserver.disconnect();
-  }, [imageContent, imageMetadata, imageContainer, setPreviewScale]);
+  }, [imageContainer, imageContent, imageMetadata, objectFit, setPreviewScale]);
 
   return imageContent ? (
     <img
       src={imageContent}
-      width={
-        Math.max(imageMetadata.width, imageMetadata.height) * internalScale
-      }
-      height={
-        Math.max(imageMetadata.width, imageMetadata.height) * internalScale
-      }
       alt="Preview"
-      className={backgroundColor === "transparent" ? "checkerboard" : ""}
-      style={{ objectFit: "contain" }}
+      className={`${backgroundColor === "transparent" ? "checkerboard" : ""} size-full max-h-[calc(42rem_-_1.5rem_-_1.5rem)] max-w-[calc(42rem_-_1.5rem_-_1.5rem)]`}
+      style={{
+        objectFit,
+        width: `${
+          objectFit === "contain"
+            ? Math.max(imageMetadata.width, imageMetadata.height) *
+              internalScale
+            : Math.min(imageMetadata.width, imageMetadata.height) *
+              internalScale
+        }px`,
+        height: `${
+          objectFit === "contain"
+            ? Math.max(imageMetadata.width, imageMetadata.height) *
+              internalScale
+            : Math.min(imageMetadata.width, imageMetadata.height) *
+              internalScale
+        }px`,
+        transition: "width 0.2s ease-out, height 0.2s ease-out",
+      }}
     />
   ) : null;
 };
@@ -132,6 +152,11 @@ function SquareToolCore({
   onError,
 }: SquareToolCoreProps) {
   const router = useRouter();
+
+  const [objectFit, setObjectFit] = useLocalStorage<"contain" | "cover">(
+    "squareTool_objectFit",
+    "contain",
+  );
 
   const [backgroundColor, setBackgroundColor] = useLocalStorage<
     "black" | "white" | "transparent"
@@ -192,7 +217,10 @@ function SquareToolCore({
   useEffect(() => {
     if (imageContent && imageMetadata) {
       const canvas = document.createElement("canvas");
-      const size = Math.max(imageMetadata.width, imageMetadata.height);
+      const size =
+        objectFit === "contain"
+          ? Math.max(imageMetadata.width, imageMetadata.height)
+          : Math.min(imageMetadata.width, imageMetadata.height);
       canvas.width = size;
       canvas.height = size;
 
@@ -205,15 +233,44 @@ function SquareToolCore({
 
       // Load and center the image
       const img = new Image();
+
       img.onload = () => {
-        const x = (size - imageMetadata.width) / 2;
-        const y = (size - imageMetadata.height) / 2;
-        ctx.drawImage(img, x, y);
+        const imgAspectRatio = img.width / img.height;
+
+        let w = size;
+        let h = size;
+        let x = 0;
+        let y = 0;
+
+        if (objectFit === "contain") {
+          // Original logic
+          w = imageMetadata.width;
+          h = imageMetadata.height;
+          x = (size - w) / 2;
+          y = (size - h) / 2;
+        } else if (objectFit === "cover") {
+          if (imgAspectRatio > 1) {
+            // Image is wider than square, crop horizontally
+            h = size;
+            w = imgAspectRatio * h;
+            x = (size - w) / 2;
+            y = 0;
+          } else {
+            // Image is taller than square, crop vertically
+            w = size;
+            h = w / imgAspectRatio;
+            y = (size - h) / 2;
+            x = 0;
+          }
+        }
+
+        ctx.drawImage(img, x, y, w, h);
         setSquareImageContent(canvas.toDataURL("image/png"));
       };
+
       img.src = imageContent;
     }
-  }, [imageContent, imageMetadata, backgroundColor]);
+  }, [backgroundColor, imageContent, imageMetadata, objectFit]);
 
   // Run the cancel function when the user presses the Escape key on the preview screen,
   // and navigate back to the home screen when the user presses Escape on the initial tool screen
@@ -271,6 +328,7 @@ function SquareToolCore({
           imageContainer={imageContainerRef as React.RefObject<HTMLDivElement>}
           imageContent={squareImageContent}
           imageMetadata={imageMetadata}
+          objectFit={objectFit}
           setPreviewScale={setPreviewScale}
         />
         <p className="break-all text-lg font-medium text-white/80">
@@ -294,12 +352,28 @@ function SquareToolCore({
             Square Size
           </span>
           <span className="text-center font-medium text-white">
-            {Math.max(imageMetadata.width, imageMetadata.height)}
+            {objectFit === "contain"
+              ? Math.max(imageMetadata.width, imageMetadata.height)
+              : Math.min(imageMetadata.width, imageMetadata.height)}
             {" × "}
-            {Math.max(imageMetadata.width, imageMetadata.height)}
+            {objectFit === "contain"
+              ? Math.max(imageMetadata.width, imageMetadata.height)
+              : Math.min(imageMetadata.width, imageMetadata.height)}
           </span>
         </div>
       </div>
+
+      {/* Object Fit Controls */}
+      <OptionSelector
+        title="Image Fit"
+        options={["contain", "cover"]}
+        selected={objectFit}
+        onChange={setObjectFit}
+        formatOption={(option) =>
+          option.charAt(0).toUpperCase() + option.slice(1)
+        }
+        className="w-full"
+      />
 
       {/* Background Controls */}
       <OptionSelector
