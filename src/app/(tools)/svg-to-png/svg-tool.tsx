@@ -31,8 +31,18 @@ function scaleSvg(svgContent: string, scale: number) {
   const parser = new DOMParser();
   const svgDoc = parser.parseFromString(svgContent, "image/svg+xml");
   const svgElement = svgDoc.documentElement;
-  const width = parseInt(svgElement.getAttribute("width") ?? "576");
-  const height = parseInt(svgElement.getAttribute("height") ?? "576");
+  const viewBox = svgElement.getAttribute("viewBox");
+  let width = parseInt(svgElement.getAttribute("width") ?? "");
+  let height = parseInt(svgElement.getAttribute("height") ?? "");
+
+  // If width and height are not expliclitly defined, extract them from the viewBox attribute
+  if ((!width || !height) && viewBox) {
+    const viewBoxValues = viewBox.split(" ").map(parseFloat);
+    if (viewBoxValues.length === 4) {
+      width = viewBoxValues[2]!;
+      height = viewBoxValues[3]!;
+    }
+  }
 
   const scaledWidth = width * scale;
   const scaledHeight = height * scale;
@@ -45,10 +55,10 @@ function scaleSvg(svgContent: string, scale: number) {
 
 function useSvgConverter(props: {
   canvas: HTMLCanvasElement | null;
-  svgContent: string;
-  scale: number;
   fileName?: string;
   imageMetadata: { width: number; height: number; name: string };
+  scale: number;
+  svgContent: string;
 }) {
   const { width, height, scaledSvg } = useMemo(() => {
     const scaledSvg = scaleSvg(props.svgContent, props.scale);
